@@ -28,7 +28,7 @@ plugins {
     signing
 }
 
-group = "de.dietrichpaul.mcnbt"
+group = "com.dietrichpaul.mcnbt"
 version = libs.versions.mcnbt.get()
 
 subprojects {
