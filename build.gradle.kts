@@ -69,13 +69,13 @@ subprojects {
     }
 }
 
-val versionString = version.toString() // Pre-compute version string during configuration time
-
 tasks {
     @Suppress("UNUSED") val printVersion by registering {
         group = "ci"
+        // Project version must be an explicit input so config cache doesn't break
+        inputs.property("version", project.version)
         doLast {
-            println(versionString)
+            println(project.version)
         }
     }
 }
