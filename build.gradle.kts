@@ -69,11 +69,13 @@ subprojects {
     }
 }
 
+val versionString = version.toString() // Pre-compute version string during configuration time
+
 tasks {
     @Suppress("UNUSED") val printVersion by registering {
         group = "ci"
         doLast {
-            println(project.version)
+            println(versionString)
         }
     }
 }
