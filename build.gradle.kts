@@ -41,6 +41,27 @@ subprojects {
     publishing {
         apache2License()
         setRepository("github.com", "MinecraftDataGenerator/mc-nbt")
+        publications.withType<MavenPublication> {
+            pom {
+                issueManagement {
+                    system = "GitHub"
+                    url = "https://github.com/MinecraftDataGenerator/mc-nbt/issues"
+                }
+                organization {
+                    name = "MinecraftDataGenerator"
+                    url = "https://github.com/MinecraftDataGenerator"
+                }
+                developers {
+                    developer {
+                        name = "Paul Dietrich"
+                        id = "dietrichpaul"
+                        url = "https://github.com/DietrichPaul"
+                        organization = "MinecraftDataGenerator"
+                        organizationUrl = "https://github.com/MinecraftDataGenerator"
+                    }
+                }
+            }
+        }
     }
 
     signing {
