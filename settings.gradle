@@ -1,0 +1,6 @@
+rootProject.name = 'mc-nbt'
+
+include 'mc-nbt-api'
+include 'mc-nbt-nio'
+include 'mc-nbt-json'
+include 'mc-nbt-xml'
