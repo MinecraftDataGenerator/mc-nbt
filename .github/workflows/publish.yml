@@ -36,5 +36,6 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           release_name: Release ${{ env.VERSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
           prerelease: false
