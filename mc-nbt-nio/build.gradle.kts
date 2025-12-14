@@ -14,19 +14,33 @@
  * limitations under the License.
  */
 
-package com.dietrichpaul.mcnbt.format.nio;
+import dev.karmakrafts.conventions.configureJava
+import dev.karmakrafts.conventions.setProjectInfo
 
-import com.dietrichpaul.mcnbt.NBTTag;
+plugins {
+    `java-library`
+}
 
-import java.nio.ByteBuffer;
+configureJava(libs.versions.java)
 
-@FunctionalInterface
-    public interface NIOSerializer<T extends NBTTag<?>> {
-        /**
-         * Schreibt die Payload eines NBT-Tags in den gegebenen ByteBuffer.
-         *
-         * @param buffer Der ByteBuffer, in den geschrieben werden soll.
-         * @param tag Der NBT-Tag, dessen Payload geschrieben werden soll.
-         */
-        void serialize(ByteBuffer buffer, T tag);
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+dependencies {
+    api(projects.mcNbtApi)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("library") {
+            from(components["java"])
+        }
     }
+    setProjectInfo(
+        name = "MC-NBT NIO",
+        description = "Flexible NBT binary codec for Java",
+        url = "https://github.com/MinecraftDataGenerator/mc-nbt"
+    )
+}

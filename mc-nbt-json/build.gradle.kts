@@ -14,15 +14,34 @@
  * limitations under the License.
  */
 
-package com.dietrichpaul.mcnbt.format.nio;
+import dev.karmakrafts.conventions.configureJava
+import dev.karmakrafts.conventions.setProjectInfo
 
-import com.dietrichpaul.mcnbt.NBTTag;
+plugins {
+    `java-library`
+}
 
-import java.nio.ByteBuffer;
+configureJava(libs.versions.java)
 
-@FunctionalInterface
-public interface NIODeserializer<T extends NBTTag<?>> {
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
 
-    T deserialize(ByteBuffer buffer);
+dependencies {
+    api(projects.mcNbtApi)
+    implementation(libs.gson)
+}
 
+publishing {
+    publications {
+        create<MavenPublication>("library") {
+            from(components["java"])
+        }
+    }
+    setProjectInfo(
+        name = "MC-NBT JSON",
+        description = "Flexible NBT JSON codec for Java",
+        url = "https://github.com/MinecraftDataGenerator/mc-nbt"
+    )
 }

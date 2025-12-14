@@ -1,0 +1,21 @@
+[versions]
+
+java = "21"
+
+mcnbt = "1.0.1"
+karmaConventions = "1.8.1" # https://github.com/karmakrafts/karma-conventions/tags
+gradleNexus = "2.0.0" # https://github.com/gradle-nexus/publish-plugin/releases
+trove4j = "3.1.0" # https://mvnrepository.com/artifact/net.sf.trove4j/core
+gson = "2.13.2"
+dokka = "2.1.0" # https://github.com/Kotlin/dokka/releases
+
+[libraries]
+
+trove4j-core = { module = "net.sf.trove4j:core", version.ref = "trove4j" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+
+[plugins]
+
+karmaConventions = { id = "dev.karmakrafts.conventions.karma-conventions", version.ref = "karmaConventions" }
+gradleNexus = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "gradleNexus" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

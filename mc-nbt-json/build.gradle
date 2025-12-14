@@ -1,4 +1,0 @@
-dependencies {
-    api project(':mc-nbt-api')
-    implementation 'com.google.code.gson:gson:2.13.2'
-}

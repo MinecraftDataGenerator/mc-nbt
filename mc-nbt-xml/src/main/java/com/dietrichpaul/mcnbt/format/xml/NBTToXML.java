@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2025 Paul Dietrich
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.dietrichpaul.mcnbt.format.xml;
 
 import com.dietrichpaul.mcnbt.*;
@@ -23,13 +39,11 @@ import javax.xml.parsers.ParserConfigurationException;
  *     <li>Byte tags with value 0 or 1 are serialized as <code>false</code> or <code>true</code>.</li>
  *     <li>Other primitive values are serialized as text content of the element.</li>
  * </ul>
- * </p>
  *
  * <p>
  * This class uses the Java built-in <code>org.w3c.dom</code> API to create a structured XML tree.
  * It does not perform XML serialization itself; use a {@link javax.xml.transform.Transformer}
  * to write the {@link Document} to a file or stream.
- * </p>
  *
  * <p>
  * Example usage:
@@ -41,9 +55,9 @@ import javax.xml.parsers.ParserConfigurationException;
  * transformer.setOutputProperty(OutputKeys.INDENT, "yes");
  * transformer.transform(new DOMSource(doc), new StreamResult(System.out));
  * }</pre>
- * </p>
  */
 public class NBTToXML {
+    private NBTToXML() {}
 
     /**
      * Converts a root NBT tag into an XML {@link Document} suitable for XNBTEdit.
