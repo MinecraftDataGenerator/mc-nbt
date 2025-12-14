@@ -16,7 +16,8 @@
 
 package com.dietrichpaul.mcnbt.format.xml;
 
-import com.dietrichpaul.mcnbt.*;import com.dietrichpaul.mcnbt.primitive.*;
+import com.dietrichpaul.mcnbt.*;
+import com.dietrichpaul.mcnbt.primitive.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -41,7 +42,8 @@ import org.w3c.dom.NodeList;
  * }</pre>
  */
 public class XMLToNBT {
-    private XMLToNBT() {}
+    private XMLToNBT() {
+    }
 
     /**
      * Converts an XML {@link Document} into the corresponding root {@link NBTTag}.
@@ -82,7 +84,8 @@ public class XMLToNBT {
             case "list" -> {
                 String ofType = element.getAttribute("of");
                 NBTTagType internalType = NBTTagType.getByName(ofType);
-                if (internalType == null) throw new IllegalArgumentException("Unknown list type: " + ofType);
+                if (internalType == null)
+                    throw new IllegalArgumentException("Unknown list type: " + ofType);
 
                 NBTList<? extends NBTTag<?>> list = NBTList.of(internalType);
                 NodeList children = element.getChildNodes();
@@ -106,13 +109,17 @@ public class XMLToNBT {
                         Node node = children.item(i);
                         if (node instanceof Element child) {
                             String text = child.getTextContent();
-                            if ("true".equalsIgnoreCase(text)) arr[idx++] = 1;
-                            else if ("false".equalsIgnoreCase(text)) arr[idx++] = 0;
-                            else arr[idx++] = Byte.parseByte(text);
+                            if ("true".equalsIgnoreCase(text))
+                                arr[idx++] = 1;
+                            else if ("false".equalsIgnoreCase(text))
+                                arr[idx++] = 0;
+                            else
+                                arr[idx++] = Byte.parseByte(text);
                         }
                     }
                     result = NBTByteArray.of(arr);
-                } else if ("int".equals(ofType)) {
+                }
+                else if ("int".equals(ofType)) {
                     int[] arr = new int[children.getLength()];
                     int idx = 0;
                     for (int i = 0; i < children.getLength(); i++) {
@@ -122,7 +129,8 @@ public class XMLToNBT {
                         }
                     }
                     result = NBTIntArray.of(arr);
-                } else if ("long".equals(ofType)) {
+                }
+                else if ("long".equals(ofType)) {
                     long[] arr = new long[children.getLength()];
                     int idx = 0;
                     for (int i = 0; i < children.getLength(); i++) {
@@ -132,7 +140,8 @@ public class XMLToNBT {
                         }
                     }
                     result = NBTLongArray.of(arr);
-                } else {
+                }
+                else {
                     throw new IllegalArgumentException("Unknown array type: " + ofType);
                 }
             }
@@ -142,9 +151,12 @@ public class XMLToNBT {
                 result = switch (tagName) {
                     case "byte" -> {
                         byte value;
-                        if ("true".equalsIgnoreCase(text)) value = 1;
-                        else if ("false".equalsIgnoreCase(text)) value = 0;
-                        else value = Byte.parseByte(text);
+                        if ("true".equalsIgnoreCase(text))
+                            value = 1;
+                        else if ("false".equalsIgnoreCase(text))
+                            value = 0;
+                        else
+                            value = Byte.parseByte(text);
                         yield NBTByte.of(value);
                     }
                     case "short" -> NBTShort.of(Short.parseShort(text));
@@ -158,8 +170,7 @@ public class XMLToNBT {
             }
         }
 
-        @SuppressWarnings("unchecked")
-        T t = (T) result;
+        @SuppressWarnings("unchecked") T t = (T) result;
         return t;
     }
 }

@@ -25,9 +25,9 @@ package com.dietrichpaul.mcnbt;
  *     <li>Tags inside a {@link NBTCompound}</li>
  * </ul>
  *
- * @param <T> the type of the underlying {@link NBTTag}
+ * @param <T>  the type of the underlying {@link NBTTag}
  * @param name The name of the NBT tag
- * @param tag The tag value associated with the name of this identifiable
+ * @param tag  The tag value associated with the name of this identifiable
  */
 public record NBTTagIdentifiable<T extends NBTTag<?>>(String name, T tag) {
 }

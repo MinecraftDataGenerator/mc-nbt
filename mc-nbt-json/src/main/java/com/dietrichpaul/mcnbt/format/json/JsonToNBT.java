@@ -18,7 +18,10 @@ package com.dietrichpaul.mcnbt.format.json;
 
 import com.dietrichpaul.mcnbt.*;
 import com.dietrichpaul.mcnbt.primitive.*;
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +56,8 @@ import java.util.Map;
  * </ul>
  */
 public class JsonToNBT {
+    private JsonToNBT() {
+    }
 
     /**
      * Converts a {@link JsonElement} into the appropriate {@link NBTTag}.
@@ -64,11 +69,14 @@ public class JsonToNBT {
     public static NBTTag<?> convertJSONToTag(JsonElement element) {
         if (element.isJsonObject()) {
             return convertObjectToCompound(element.getAsJsonObject());
-        } else if (element.isJsonArray()) {
+        }
+        else if (element.isJsonArray()) {
             return convertArrayToTag(element.getAsJsonArray());
-        } else if (element.isJsonPrimitive()) {
+        }
+        else if (element.isJsonPrimitive()) {
             return convertPrimitive(element.getAsJsonPrimitive());
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Unknown JSON element: " + element);
         }
     }
@@ -97,7 +105,8 @@ public class JsonToNBT {
      * @return the corresponding NBT tag
      */
     private static NBTTag<?> convertArrayToTag(JsonArray array) {
-        if (array.isEmpty()) return NBTList.of();
+        if (array.isEmpty())
+            return NBTList.of();
 
         List<NBTTag<?>> elements = new ArrayList<>();
         NBTTagType firstType = null;
@@ -105,26 +114,32 @@ public class JsonToNBT {
         for (JsonElement el : array) {
             NBTTag<?> tag = convertJSONToTag(el);
             elements.add(tag);
-            if (firstType == null) firstType = tag.getTagType();
-            else if (firstType != tag.getTagType()) firstType = NBTTagType.LIST;
+            if (firstType == null)
+                firstType = tag.getTagType();
+            else if (firstType != tag.getTagType())
+                firstType = NBTTagType.LIST;
         }
 
-        if (firstType == null) return NBTList.of();
+        if (firstType == null)
+            return NBTList.of();
 
         switch (firstType) {
             case BYTE -> {
                 byte[] arr = new byte[elements.size()];
-                for (int i = 0; i < elements.size(); i++) arr[i] = ((NBTByte) elements.get(i)).getPrimitiveType();
+                for (int i = 0; i < elements.size(); i++)
+                    arr[i] = ((NBTByte) elements.get(i)).getPrimitiveType();
                 return NBTByteArray.of(arr);
             }
             case SHORT, INT -> {
                 int[] arr = new int[elements.size()];
-                for (int i = 0; i < elements.size(); i++) arr[i] = ((NBTInt) elements.get(i)).getPrimitiveType();
+                for (int i = 0; i < elements.size(); i++)
+                    arr[i] = ((NBTInt) elements.get(i)).getPrimitiveType();
                 return NBTIntArray.of(arr);
             }
             case LONG -> {
                 long[] arr = new long[elements.size()];
-                for (int i = 0; i < elements.size(); i++) arr[i] = ((NBTLong) elements.get(i)).getPrimitiveType();
+                for (int i = 0; i < elements.size(); i++)
+                    arr[i] = ((NBTLong) elements.get(i)).getPrimitiveType();
                 return NBTLongArray.of(arr);
             }
             default -> {
@@ -142,9 +157,11 @@ public class JsonToNBT {
     private static NBTTag<?> convertPrimitive(JsonPrimitive primitive) {
         if (primitive.isString()) {
             return NBTString.of(primitive.getAsString());
-        } else if (primitive.isNumber()) {
+        }
+        else if (primitive.isNumber()) {
             return numberToNBT(primitive.getAsNumber());
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Unsupported JSON primitive: " + primitive);
         }
     }
@@ -163,15 +180,20 @@ public class JsonToNBT {
 
         if (d >= Byte.MIN_VALUE && d <= Byte.MAX_VALUE && number.doubleValue() == number.byteValue()) {
             return NBTByte.of(number.byteValue());
-        } else if (d >= Short.MIN_VALUE && d <= Short.MAX_VALUE && number.doubleValue() == number.shortValue()) {
+        }
+        else if (d >= Short.MIN_VALUE && d <= Short.MAX_VALUE && number.doubleValue() == number.shortValue()) {
             return NBTShort.of(number.shortValue());
-        } else if (d >= Integer.MIN_VALUE && d <= Integer.MAX_VALUE && number.doubleValue() == number.intValue()) {
+        }
+        else if (d >= Integer.MIN_VALUE && d <= Integer.MAX_VALUE && number.doubleValue() == number.intValue()) {
             return NBTInt.of(number.intValue());
-        } else if (d >= Long.MIN_VALUE && d <= Long.MAX_VALUE && number.doubleValue() == number.longValue()) {
+        }
+        else if (d >= Long.MIN_VALUE && d <= Long.MAX_VALUE && number.doubleValue() == number.longValue()) {
             return NBTLong.of(number.longValue());
-        } else if ((float) d == d) {
+        }
+        else if ((float) d == d) {
             return NBTFloat.of((float) d);
-        } else {
+        }
+        else {
             return NBTDouble.of(d);
         }
     }

@@ -16,29 +16,66 @@
 
 package com.dietrichpaul.mcnbt.exception;
 
+/**
+ * Exception that's raised, when the underlying NBT parser
+ * encounters an unrecognized NBT tag type ID.
+ */
 public class UnknownTagException extends RuntimeException {
-
+    /**
+     * The unrecognized tag type ID.
+     */
     private final int id;
 
+    /**
+     * Creates a new {@code UnknownTagException} with a default detail message
+     * that includes the given unknown tag type ID.
+     *
+     * @param id the unrecognized NBT tag type ID
+     */
     public UnknownTagException(int id) {
         this("Unknown tag id: " + id, id);
     }
 
+    /**
+     * Creates a new {@code UnknownTagException} with the specified detail message.
+     *
+     * @param message the detail message
+     * @param id      the unrecognized NBT tag type ID
+     */
     public UnknownTagException(String message, int id) {
         super(message);
         this.id = id;
     }
 
+    /**
+     * Creates a new {@code UnknownTagException} with the specified detail message
+     * and cause.
+     *
+     * @param message the detail message
+     * @param cause   the cause
+     * @param id      the unrecognized NBT tag type ID
+     */
     public UnknownTagException(String message, Throwable cause, int id) {
         super(message, cause);
         this.id = id;
     }
 
+    /**
+     * Creates a new {@code UnknownTagException} with the specified cause.
+     *
+     * @param cause the cause
+     * @param id    the unrecognized NBT tag type ID
+     */
     public UnknownTagException(Throwable cause, int id) {
         super(cause);
         this.id = id;
     }
 
+    /**
+     * Returns the unrecognized NBT tag type ID that caused this exception.
+     *
+     * @return the unknown tag type ID
+     */
     public int getId() {
         return id;
     }

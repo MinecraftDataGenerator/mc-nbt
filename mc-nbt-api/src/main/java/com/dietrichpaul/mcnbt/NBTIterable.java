@@ -19,11 +19,29 @@ package com.dietrichpaul.mcnbt;
 import java.util.Iterator;
 import java.util.Spliterator;
 
+/**
+ * Base interface for NBT tags that expose iterable contents (e.g., arrays, lists).
+ * <p>
+ * Extends both {@link NBTTag} and {@link Iterable} to integrate with Java's
+ * iteration constructs. Implementations may provide primitive-specialized
+ * iteration methods to avoid boxing and should document their performance
+ * characteristics accordingly.
+ *
+ * @param <T> the element type presented by the iterable view
+ */
 public interface NBTIterable<T> extends NBTTag<T>, Iterable<T> {
 
+    /**
+     * Returns an iterator over the elements. Implementations may choose to
+     * return a boxed iterator even if a primitive iterator exists separately.
+     */
     @Override
     Iterator<T> iterator();
 
+    /**
+     * Returns a spliterator over the elements. Implementations commonly return
+     * a boxed spliterator for API compatibility.
+     */
     @Override
     Spliterator<T> spliterator();
 

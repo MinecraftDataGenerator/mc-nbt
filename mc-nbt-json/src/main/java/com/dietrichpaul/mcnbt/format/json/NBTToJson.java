@@ -44,6 +44,8 @@ import java.util.Objects;
  * </ul>
  */
 public class NBTToJson {
+    private NBTToJson() {
+    }
 
     /**
      * Converts a generic {@link NBTTag} to a {@link JsonElement}.
@@ -58,11 +60,14 @@ public class NBTToJson {
 
         if (tag.getTagType().isCompound()) {
             return convertCompoundToJSON(tag.asCompound());
-        } else if (tag.getTagType().isIterable()) {
+        }
+        else if (tag.getTagType().isIterable()) {
             return convertIterableToJSON(tag.asIterable());
-        } else if (tag.getTagType().isPrimitive()) {
+        }
+        else if (tag.getTagType().isPrimitive()) {
             return convertPrimitiveToJSON(tag);
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Cannot serialize " + tag);
         }
     }
@@ -76,9 +81,11 @@ public class NBTToJson {
     public static JsonElement convertPrimitiveToJSON(Object o) {
         if (o instanceof NBTPrimitive<?> primitiveTag) {
             return convertPrimitiveToJSON(primitiveTag.getPrimitiveType());
-        } else if (o instanceof Number num) {
+        }
+        else if (o instanceof Number num) {
             return new JsonPrimitive(num);
-        } else {
+        }
+        else {
             return new JsonPrimitive(String.valueOf(o));
         }
     }
@@ -96,7 +103,8 @@ public class NBTToJson {
         iterable.forEach(o -> {
             if (o instanceof NBTTag<?> tag) {
                 array.add(convertTagToJSON(tag));
-            } else {
+            }
+            else {
                 array.add(convertPrimitiveToJSON(o));
             }
         });

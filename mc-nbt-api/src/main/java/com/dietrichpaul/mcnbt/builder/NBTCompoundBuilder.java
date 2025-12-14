@@ -17,8 +17,6 @@
 package com.dietrichpaul.mcnbt.builder;
 
 import com.dietrichpaul.mcnbt.*;
-import com.dietrichpaul.mcnbt.NBTCompound;
-import com.dietrichpaul.mcnbt.NBTTag;
 import com.dietrichpaul.mcnbt.primitive.*;
 
 import java.util.LinkedHashMap;
@@ -36,6 +34,12 @@ import java.util.function.Consumer;
 public class NBTCompoundBuilder {
     // Use LinkedHashMap to preserve insertion order, matching NBTCompound's behavior
     private final Map<String, NBTTag<?>> tags = new LinkedHashMap<>();
+
+    /**
+     * Creates a new builder instance.
+     */
+    public NBTCompoundBuilder() {
+    }
 
     /**
      * Puts a TAG_Byte into the compound.
@@ -139,7 +143,7 @@ public class NBTCompoundBuilder {
      *
      * @param key                The name of the nested compound tag.
      * @param subCompoundBuilder A consumer that accepts a new {@link NBTCompoundBuilder}
-     * to define the contents of the nested compound.
+     *                           to define the contents of the nested compound.
      * @return This Builder, for chaining.
      */
     public NBTCompoundBuilder compound(String key, Consumer<NBTCompoundBuilder> subCompoundBuilder) {
@@ -153,9 +157,9 @@ public class NBTCompoundBuilder {
      * Starts a sub-building process for a nested {@link NBTList} (TAG_List).
      * The built list is put into this compound under the given key.
      *
-     * @param key                The name of the nested list tag.
-     * @param subListBuilder     A consumer that accepts a new {@link NBTListBuilder}
-     * to define the contents of the nested list.
+     * @param key            The name of the nested list tag.
+     * @param subListBuilder A consumer that accepts a new {@link NBTListBuilder}
+     *                       to define the contents of the nested list.
      * @return This Builder, for chaining.
      */
     public NBTCompoundBuilder list(String key, Consumer<NBTListBuilder<?>> subListBuilder) {
@@ -169,9 +173,9 @@ public class NBTCompoundBuilder {
      * Starts a sub-building process for a nested {@link NBTByteArray} (TAG_Byte_Array).
      * The built byte array is put into this compound under the given key.
      *
-     * @param key                The name of the nested byte array tag.
-     * @param subArrayBuilder    A consumer that accepts a new {@link NBTByteArrayBuilder}
-     * to define the contents of the nested array.
+     * @param key             The name of the nested byte array tag.
+     * @param subArrayBuilder A consumer that accepts a new {@link NBTByteArrayBuilder}
+     *                        to define the contents of the nested array.
      * @return This Builder, for chaining.
      */
     public NBTCompoundBuilder byteArray(String key, Consumer<NBTByteArrayBuilder> subArrayBuilder) {
@@ -185,9 +189,9 @@ public class NBTCompoundBuilder {
      * Starts a sub-building process for a nested {@link NBTIntArray} (TAG_Int_Array).
      * The built int array is put into this compound under the given key.
      *
-     * @param key                The name of the nested int array tag.
-     * @param subArrayBuilder    A consumer that accepts a new {@link NBTIntArrayBuilder}
-     * to define the contents of the nested array.
+     * @param key             The name of the nested int array tag.
+     * @param subArrayBuilder A consumer that accepts a new {@link NBTIntArrayBuilder}
+     *                        to define the contents of the nested array.
      * @return This Builder, for chaining.
      */
     public NBTCompoundBuilder intArray(String key, Consumer<NBTIntArrayBuilder> subArrayBuilder) {
@@ -201,9 +205,9 @@ public class NBTCompoundBuilder {
      * Starts a sub-building process for a nested {@link NBTLongArray} (TAG_Long_Array).
      * The built long array is put into this compound under the given key.
      *
-     * @param key                The name of the nested long array tag.
-     * @param subArrayBuilder    A consumer that accepts a new {@link NBTLongArrayBuilder}
-     * to define the contents of the nested array.
+     * @param key             The name of the nested long array tag.
+     * @param subArrayBuilder A consumer that accepts a new {@link NBTLongArrayBuilder}
+     *                        to define the contents of the nested array.
      * @return This Builder, for chaining.
      */
     public NBTCompoundBuilder longArray(String key, Consumer<NBTLongArrayBuilder> subArrayBuilder) {

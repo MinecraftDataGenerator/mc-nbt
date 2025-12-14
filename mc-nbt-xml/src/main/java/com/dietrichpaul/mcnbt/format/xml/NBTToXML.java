@@ -18,7 +18,6 @@ package com.dietrichpaul.mcnbt.format.xml;
 
 import com.dietrichpaul.mcnbt.*;
 import com.dietrichpaul.mcnbt.primitive.NBTByte;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -57,7 +56,8 @@ import javax.xml.parsers.ParserConfigurationException;
  * }</pre>
  */
 public class NBTToXML {
-    private NBTToXML() {}
+    private NBTToXML() {
+    }
 
     /**
      * Converts a root NBT tag into an XML {@link Document} suitable for XNBTEdit.
@@ -92,46 +92,56 @@ public class NBTToXML {
         if (tag.getTagType().isCompound()) {
             // Compound tags: <compound name="...">...</compound>
             element = doc.createElement("compound");
-            if (name != null) element.setAttribute("name", name);
+            if (name != null)
+                element.setAttribute("name", name);
 
             NBTCompound compound = tag.asCompound();
             for (NBTTagIdentifiable<?> namedTag : compound.getTagList()) {
                 element.appendChild(buildElement(doc, namedTag.tag(), namedTag.name()));
             }
 
-        } else if (tag.getTagType().isList()) {
+        }
+        else if (tag.getTagType().isList()) {
             // List tags: <list of="type" name="...">...</list>
             NBTList<?> list = tag.asList();
             element = doc.createElement("list");
             element.setAttribute("of", list.getInternalType().getName());
-            if (name != null) element.setAttribute("name", name);
+            if (name != null)
+                element.setAttribute("name", name);
 
             for (NBTTag<?> item : list) {
                 element.appendChild(buildElement(doc, item, null));
             }
 
-        } else if (tag.getTagType().isArray()) {
+        }
+        else if (tag.getTagType().isArray()) {
             // Array tags: <byte_array>...</byte_array>, <int_array>..., <long_array>...
             element = doc.createElement("array");
-            if (name != null) element.setAttribute("name", name);
+            if (name != null)
+                element.setAttribute("name", name);
 
             if (tag instanceof NBTByteArray ba) {
                 element.setAttribute("of", "byte");
                 for (byte b : ba.asIterable()) {
                     Element e = doc.createElement("byte");
-                    if (b == 0) e.setTextContent("false");
-                    else if (b == 1) e.setTextContent("true");
-                    else e.setTextContent(Byte.toString(b));
+                    if (b == 0)
+                        e.setTextContent("false");
+                    else if (b == 1)
+                        e.setTextContent("true");
+                    else
+                        e.setTextContent(Byte.toString(b));
                     element.appendChild(e);
                 }
-            } else if (tag instanceof NBTIntArray ia) {
+            }
+            else if (tag instanceof NBTIntArray ia) {
                 element.setAttribute("of", "int");
                 for (int v : ia.asIterable()) {
                     Element e = doc.createElement("int");
                     e.setTextContent(Integer.toString(v));
                     element.appendChild(e);
                 }
-            } else if (tag instanceof NBTLongArray la) {
+            }
+            else if (tag instanceof NBTLongArray la) {
                 element.setAttribute("of", "long");
                 for (long v : la.asIterable()) {
                     Element e = doc.createElement("long");
@@ -140,21 +150,28 @@ public class NBTToXML {
                 }
             }
 
-        } else if (tag.getTagType().isPrimitive()) {
+        }
+        else if (tag.getTagType().isPrimitive()) {
             // Primitive tags: <byte>, <short>, <int>, <long>, <float>, <double>, <string>
             element = doc.createElement(tag.getTagType().getName());
-            if (name != null) element.setAttribute("name", name);
+            if (name != null)
+                element.setAttribute("name", name);
 
             Object value = ((NBTPrimitive<?>) tag).getPrimitiveType();
             if (tag instanceof NBTByte btag) {
-                if (btag.getPrimitiveType() == 0) element.setTextContent("false");
-                else if (btag.getPrimitiveType() == 1) element.setTextContent("true");
-                else element.setTextContent(Byte.toString(btag.getPrimitiveType()));
-            } else {
+                if (btag.getPrimitiveType() == 0)
+                    element.setTextContent("false");
+                else if (btag.getPrimitiveType() == 1)
+                    element.setTextContent("true");
+                else
+                    element.setTextContent(Byte.toString(btag.getPrimitiveType()));
+            }
+            else {
                 element.setTextContent(value.toString());
             }
 
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Unknown NBT type: " + tag);
         }
 

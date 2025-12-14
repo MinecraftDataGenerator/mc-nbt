@@ -22,46 +22,45 @@ import com.dietrichpaul.mcnbt.primitive.NBTString;
 import java.nio.ByteBuffer;
 
 /**
- * Stellt eine Schätzung der maximalen Byte-Anzahl bereit, die zur Serialisierung
- * einer NBT-Struktur in einen {@link ByteBuffer} benötigt wird.
+ * Provides a conservative estimate of the maximum number of bytes required to serialize
+ * an NBT structure into a {@link ByteBuffer}.
  *
- * <p>Dies ist nützlich für die effiziente Allokation des Puffers (z.B. mit {@code ByteBuffer.allocate(maxSize)}).
- * Die Schätzung ist konservativ, um Pufferüberläufe zu verhindern.
+ * <p>This is useful for efficient buffer allocation (e.g., with {@code ByteBuffer.allocate(maxSize)}).
+ * The estimate intentionally errs on the high side to prevent buffer overflows.
  */
 public class NBTSizeProvider {
 
     private NBTSizeProvider() {
-        // Utility class
     }
 
     /**
-     * Berechnet die maximal mögliche Größe des serialisierten benannten NBT-Tags.
-     * Dies ist der Haupteinstiegspunkt für das Root-Tag.
+     * Calculates the maximum possible size of a serialized, named NBT tag.
+     * This is the primary entry point for estimating the root tag size.
      *
-     * @param tagIdentifiable Das benannte Tag (z.B. das Root-Compound).
-     * @return Die maximal erforderliche Anzahl von Bytes.
+     * @param tagIdentifiable the named tag (e.g., the root compound)
+     * @return the maximum required number of bytes
      */
     public static int estimateMaxSize(NBTTagIdentifiable<?> tagIdentifiable) {
         int size = 0;
         NBTTag<?> tag = tagIdentifiable.tag();
 
-        // 1. Tag ID (1 Byte)
+        // 1. Tag ID (1 byte)
         size += Byte.BYTES;
 
-        // 2. Tag Name (2-Byte Länge + max 4 Bytes pro Char für UTF-8-String)
+        // 2. Tag name (2-byte length + up to 4 bytes per character for UTF-8)
         size += estimateStringPayloadSize(tagIdentifiable.name());
 
-        // 3. Tag Payload
+        // 3. Tag payload
         size += estimatePayloadSize(tag);
 
         return size;
     }
 
     /**
-     * Berechnet die maximal mögliche Größe der serialisierten NBT-Tag-Payload.
+     * Calculates the maximum possible size of a serialized NBT tag payload (excluding name and ID).
      *
-     * @param tag Der Tag.
-     * @return Die maximal erforderliche Anzahl von Bytes für die Payload.
+     * @param tag the tag to estimate
+     * @return the maximum required number of bytes for the payload
      */
     public static int estimatePayloadSize(NBTTag<?> tag) {
         if (tag == null || tag.getTagType() == NBTTagType.NULL) {
@@ -69,7 +68,7 @@ public class NBTSizeProvider {
         }
 
         return switch (tag.getTagType()) {
-            // Primitive Zahlentypen (Feste Größe)
+            // Primitive numeric types (fixed size)
             case BYTE -> Byte.BYTES;
             case SHORT -> Short.BYTES;
             case INT -> Integer.BYTES;
@@ -77,57 +76,61 @@ public class NBTSizeProvider {
             case FLOAT -> Float.BYTES;
             case DOUBLE -> Double.BYTES;
 
-            // Array-Typen (Länge + Inhalt)
+            // Array types (length + content)
             case BYTE_ARRAY -> estimateByteArrayPayloadSize((NBTByteArray) tag);
             case INT_ARRAY -> estimateIntArrayPayloadSize((NBTIntArray) tag);
             case LONG_ARRAY -> estimateLongArrayPayloadSize((NBTLongArray) tag);
 
-            // String (Länge + Inhalt)
+            // String (length + content)
             case STRING -> estimateStringPayloadSize(((NBTString) tag).asString());
 
-            // Struktur-Typen (Länge + Inhalt)
+            // Structured types (length + content)
             case LIST -> estimateListPayloadSize((NBTList<?>) tag);
             case COMPOUND -> estimateCompoundPayloadSize((NBTCompound) tag);
 
             default ->
-                    throw new IllegalArgumentException("Unbekannter Tag-Typ für Größenschätzung: " + tag.getTagType().getName());
+                throw new IllegalArgumentException("Unknown tag type for size estimation: " + tag.getTagType().getName());
         };
     }
 
     /**
-     * Berechnet die maximale Größe für die String-Payload (2-Byte Länge + UTF-8-Inhalt).
-     * <p>Maximale Länge für NBT-String ist 65535 Bytes, die Schätzung nimmt 4 Bytes/Char an.</p>
+     * Calculates the maximum size for a string payload (2-byte length + UTF-8 content).
+     * <p>The maximum length for an NBT string is 65,535 bytes; this estimate assumes up to
+     * 4 bytes per Java character in UTF-8.</p>
+     *
+     * @param s the string value (may be {@code null})
+     * @return the maximum required number of bytes for the serialized string payload
      */
     public static int estimateStringPayloadSize(String s) {
         if (s == null || s.isEmpty()) {
-            return Short.BYTES; // 2 Bytes für Länge 0
+            return Short.BYTES; // 2 bytes for length=0
         }
-        // 2 Bytes für Länge + (Worst Case: 4 Bytes pro Java-Char für UTF-8)
+        // 2 bytes for length + (worst case: 4 bytes per Java char for UTF-8)
         return Short.BYTES + s.length() * 4;
     }
 
     private static int estimateByteArrayPayloadSize(NBTByteArray tag) {
-        // 4 Bytes für Länge + Byte-Array-Inhalt
+        // 4 bytes for length + byte array content
         return Integer.BYTES + tag.getContent().size();
     }
 
     private static int estimateIntArrayPayloadSize(NBTIntArray tag) {
-        // 4 Bytes für Länge + (Anzahl * 4 Bytes pro Int)
+        // 4 bytes for length + (count * 4 bytes per int)
         return Integer.BYTES + tag.getContent().size() * Integer.BYTES;
     }
 
     private static int estimateLongArrayPayloadSize(NBTLongArray tag) {
-        // 4 Bytes für Länge + (Anzahl * 8 Bytes pro Long)
+        // 4 bytes for length + (count * 8 bytes per long)
         return Integer.BYTES + tag.getContent().size() * Long.BYTES;
     }
 
     private static int estimateListPayloadSize(NBTList<?> list) {
-        // 1 Byte für internen Tag ID + 4 Bytes für List-Länge (Int)
+        // 1 byte for internal tag ID + 4 bytes for list length (int)
         int size = Byte.BYTES + Integer.BYTES;
 
-        // Wenn die Liste leer ist, ist internType NULL (0x00), und size ist 5.
+        // If the list is empty, the internal type is NULL (0x00), and size is 5.
         if (list.size() > 0) {
-            // Summe der Payloads aller Elemente
+            // Sum of payloads of all elements
             for (NBTTag<?> tag : list) {
                 size += estimatePayloadSize(tag);
             }
@@ -137,11 +140,11 @@ public class NBTSizeProvider {
 
     private static int estimateCompoundPayloadSize(NBTCompound compound) {
         int size = 0;
-        // Summe der maximalen Größen aller enthaltenen benannten Tags
+        // Sum of the maximum sizes of all contained named tags
         for (NBTTagIdentifiable<?> identifiable : compound) {
             size += estimateMaxSize(identifiable);
         }
-        // 1 Byte für den TAG_End (0x00) Begrenzer
+        // 1 byte for the TAG_End (0x00) terminator
         size += Byte.BYTES;
         return size;
     }

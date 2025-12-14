@@ -20,9 +20,22 @@ import com.dietrichpaul.mcnbt.NBTTag;
 
 import java.nio.ByteBuffer;
 
+/**
+ * A function which transform a given sequence of bytes
+ * provided by a {@link ByteBuffer} into an {@link NBTTag} of some kind.
+ *
+ * @param <T> The type of {@link NBTTag} being deserialized.
+ */
 @FunctionalInterface
 public interface NIODeserializer<T extends NBTTag<?>> {
-
+    /**
+     * Reads the payload of an NBT tag from the provided {@link ByteBuffer} and
+     * returns a new tag instance. Implementations must respect the byte order of
+     * the buffer.
+     *
+     * @param buffer the source byte buffer (byte order defines endianness)
+     * @return the deserialized NBT tag
+     */
     T deserialize(ByteBuffer buffer);
 
 }

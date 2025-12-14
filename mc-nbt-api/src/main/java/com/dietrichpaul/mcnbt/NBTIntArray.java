@@ -47,10 +47,6 @@ import java.util.Spliterators;
  */
 public class NBTIntArray implements NBTIterable<Integer> {
 
-    public static NBTIntArrayBuilder builder() {
-        return new NBTIntArrayBuilder();
-    }
-
     private TIntList content;
 
     /**
@@ -63,15 +59,23 @@ public class NBTIntArray implements NBTIterable<Integer> {
     }
 
     /**
+     * Creates a new {@link NBTIntArrayBuilder} to fluently construct an
+     * {@link NBTIntArray} instance.
+     *
+     * @return a new builder for {@link NBTIntArray}
+     */
+    public static NBTIntArrayBuilder builder() {
+        return new NBTIntArrayBuilder();
+    }
+
+    /**
      * Creates a new NBTIntArray from an int array.
      *
      * @param array initial values
      * @return new instance
      */
     public static NBTIntArray of(int... array) {
-        return new NBTIntArray(
-                array.length == 0 ? new TIntArrayList() : new TIntArrayList(array)
-        );
+        return new NBTIntArray(array.length == 0 ? new TIntArrayList() : new TIntArrayList(array));
     }
 
     /**
@@ -94,34 +98,77 @@ public class NBTIntArray implements NBTIterable<Integer> {
         this.content = Objects.requireNonNull(content, "content");
     }
 
+    /**
+     * Adds an int value to the end of the array.
+     *
+     * @param value the value to add
+     */
     public void add(int value) {
         content.add(value);
     }
 
+    /**
+     * Inserts an int value at the specified index.
+     *
+     * @param index position to insert at
+     * @param value the value to insert
+     */
     public void add(int index, int value) {
         content.insert(index, value);
     }
 
+    /**
+     * Removes and returns the int at the specified index.
+     *
+     * @param index index to remove
+     * @return the removed value
+     */
     public int remove(int index) {
         return content.removeAt(index);
     }
 
+    /**
+     * Retrieves the int value at the given index.
+     *
+     * @param index array index
+     * @return the value at that index
+     */
     public int get(int index) {
         return content.get(index);
     }
 
+    /**
+     * Sets the int value at the specified index.
+     *
+     * @param index array index
+     * @param value new value to set
+     */
     public void set(int index, int value) {
         content.set(index, value);
     }
 
+    /**
+     * Returns the number of ints currently stored in this array.
+     *
+     * @return size of the array
+     */
     public int size() {
         return content.size();
     }
 
+    /**
+     * Removes all values from the array.
+     */
     public void clear() {
         content.clear();
     }
 
+    /**
+     * Ensures that the underlying list has enough capacity to store at least
+     * {@code capacity} values without resizing (when backed by {@link TIntArrayList}).
+     *
+     * @param capacity minimum capacity to ensure
+     */
     public void ensureCapacity(int capacity) {
         if (content instanceof TIntArrayList list) {
             list.ensureCapacity(capacity);
@@ -181,11 +228,7 @@ public class NBTIntArray implements NBTIterable<Integer> {
     @Deprecated(forRemoval = false)
     @Override
     public Spliterator<Integer> spliterator() {
-        return Spliterators.spliterator(
-                iterator(),
-                size(),
-                Spliterator.ORDERED | Spliterator.NONNULL
-        );
+        return Spliterators.spliterator(iterator(), size(), Spliterator.ORDERED | Spliterator.NONNULL);
     }
 
     @Override

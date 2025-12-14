@@ -28,9 +28,36 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility class for deserializing NBT tags from a {@link java.nio.ByteBuffer}
+ * using the standard NBT binary format (big-endian).
+ * <p>
+ * This class performs the inverse operation of {@link NBTToNIO} by reading
+ * NBT structures from the buffer and constructing the corresponding tag
+ * objects. All methods advance the buffer position by the number of bytes
+ * consumed.
+ * </p>
+ */
 public class NIOToNBT {
+    private NIOToNBT() {
+    }
 
-    private static final Map<NBTTagType, NIODeserializer<?>> DESERIALIZER_MAP = new HashMap<>() {{
+    /**
+     * Returns the {@link NIODeserializer} that can read the payload for the given
+     * {@link NBTTagType} from a {@link ByteBuffer}.
+     *
+     * @param type the tag type to look up
+     * @return a deserializer for the given type
+     * @throws IllegalArgumentException if there is no deserializer mapped for the type
+     */
+    public static NIODeserializer<?> getDeserializerForType(NBTTagType type) {
+        NIODeserializer<?> deserializer = DESERIALIZER_MAP.get(type);
+        if (deserializer != null) {
+            return deserializer;
+        }
+
+        throw new IllegalArgumentException("No deserializer for type: " + type.getName());
+    }    private static final Map<NBTTagType, NIODeserializer<?>> DESERIALIZER_MAP = new HashMap<>() {{
         put(NBTTagType.BYTE, NIOToNBT::readByte);
         put(NBTTagType.SHORT, NIOToNBT::readShort);
         put(NBTTagType.INT, NIOToNBT::readInt);
@@ -45,15 +72,19 @@ public class NIOToNBT {
         put(NBTTagType.COMPOUND, NIOToNBT::readCompound);
     }};
 
-    public static NIODeserializer<?> getDeserializerForType(NBTTagType type) {
-        NIODeserializer<?> deserializer = DESERIALIZER_MAP.get(type);
-        if (deserializer != null) {
-            return deserializer;
-        }
-
-        throw new IllegalArgumentException("No deserializer for type: " + type.getName());
-    }
-
+    /**
+     * Reads a single named NBT tag from the given {@link ByteBuffer}.
+     * <p>
+     * The method expects the buffer to be positioned at the beginning of a named tag:
+     * first the tag ID (1 byte), then the tag name (2-byte unsigned length + UTF-8 bytes),
+     * and finally the tag payload. If the tag ID is {@code TAG_End} ({@link NBTTagType#NULL}),
+     * this method returns an {@link NBTTagIdentifiable} with {@code null} name and {@code null} tag.
+     * </p>
+     *
+     * @param buffer the source byte buffer (big-endian)
+     * @return the read named tag; returns {@code (null, null)} for {@code TAG_End}
+     * @throws IllegalArgumentException if the tag type is unknown
+     */
     public static NBTTagIdentifiable<?> readNamedTag(ByteBuffer buffer) {
         int tagTypeId = Byte.toUnsignedInt(buffer.get());
         NBTTagType tagType = NBTTagType.getTagById(tagTypeId);
@@ -71,6 +102,16 @@ public class NIOToNBT {
         return new NBTTagIdentifiable<>(name, tag);
     }
 
+    /**
+     * Reads a {@link NBTCompound} payload from the given buffer.
+     * <p>
+     * The buffer must be positioned at the first named entry of the compound.
+     * Entries are read as named tags until a {@code TAG_End} is encountered.
+     * </p>
+     *
+     * @param buffer the source buffer
+     * @return the populated compound tag
+     */
     public static NBTCompound readCompound(ByteBuffer buffer) {
         NBTCompound compound = new NBTCompound();
         NBTTagIdentifiable<?> identifiable;
@@ -82,6 +123,18 @@ public class NIOToNBT {
         return compound;
     }
 
+    /**
+     * Reads an {@link NBTList} payload from the buffer.
+     * <p>
+     * Format: element type ID (1 byte), length (int), followed by that many
+     * element payloads of the given type. If the element type is {@code TAG_End},
+     * an empty list is returned.
+     * </p>
+     *
+     * @param buffer the source buffer
+     * @return the list tag containing all read elements
+     * @throws IllegalArgumentException if the element type is unknown
+     */
     public static NBTList<?> readList(ByteBuffer buffer) {
         int tagTypeId = Byte.toUnsignedInt(buffer.get());
         NBTTagType internType = NBTTagType.getTagById(tagTypeId);
@@ -103,6 +156,15 @@ public class NIOToNBT {
         return NBTList.of(tags, internType);
     }
 
+    /**
+     * Reads an {@link NBTString} payload from the buffer.
+     * <p>
+     * Format: 2-byte unsigned length (big-endian) followed by UTF-8 bytes.
+     * </p>
+     *
+     * @param buffer the source buffer
+     * @return the string tag; never {@code null}
+     */
     public static NBTString readString(ByteBuffer buffer) {
         int len = Short.toUnsignedInt(buffer.getShort());
         if (len == 0) {
@@ -113,6 +175,15 @@ public class NIOToNBT {
         return NBTString.of(new String(buf, StandardCharsets.UTF_8));
     }
 
+    /**
+     * Reads an {@link NBTLongArray} payload from the buffer.
+     * <p>
+     * Format: length (int) followed by that many 64-bit signed integers.
+     * </p>
+     *
+     * @param buffer the source buffer
+     * @return the long array tag
+     */
     public static NBTLongArray readLongArray(ByteBuffer buffer) {
         int len = buffer.getInt();
         long[] array = new long[len];
@@ -122,6 +193,15 @@ public class NIOToNBT {
         return NBTLongArray.of(array);
     }
 
+    /**
+     * Reads an {@link NBTIntArray} payload from the buffer.
+     * <p>
+     * Format: length (int) followed by that many 32-bit signed integers.
+     * </p>
+     *
+     * @param buffer the source buffer
+     * @return the int array tag
+     */
     public static NBTIntArray readIntArray(ByteBuffer buffer) {
         int len = buffer.getInt();
         int[] array = new int[len];
@@ -131,6 +211,15 @@ public class NIOToNBT {
         return NBTIntArray.of(array);
     }
 
+    /**
+     * Reads an {@link NBTByteArray} payload from the buffer.
+     * <p>
+     * Format: length (int) followed by that many bytes.
+     * </p>
+     *
+     * @param buffer the source buffer
+     * @return the byte array tag
+     */
     public static NBTByteArray readByteArray(ByteBuffer buffer) {
         int len = buffer.getInt();
         byte[] bytes = new byte[len];
@@ -138,28 +227,66 @@ public class NIOToNBT {
         return NBTByteArray.of(bytes);
     }
 
+    /**
+     * Reads an {@link NBTDouble} payload (IEEE 754 double, 8 bytes) from the buffer.
+     *
+     * @param buffer the source buffer
+     * @return the double tag
+     */
     public static NBTDouble readDouble(ByteBuffer buffer) {
         return NBTDouble.of(buffer.getDouble());
     }
 
+    /**
+     * Reads an {@link NBTFloat} payload (IEEE 754 float, 4 bytes) from the buffer.
+     *
+     * @param buffer the source buffer
+     * @return the float tag
+     */
     public static NBTFloat readFloat(ByteBuffer buffer) {
         return NBTFloat.of(buffer.getFloat());
     }
 
+    /**
+     * Reads an {@link NBTLong} payload (64-bit signed) from the buffer.
+     *
+     * @param buffer the source buffer
+     * @return the long tag
+     */
     public static NBTLong readLong(ByteBuffer buffer) {
         return NBTLong.of(buffer.getLong());
     }
 
+    /**
+     * Reads an {@link NBTInt} payload (32-bit signed) from the buffer.
+     *
+     * @param buffer the source buffer
+     * @return the int tag
+     */
     public static NBTInt readInt(ByteBuffer buffer) {
         return NBTInt.of(buffer.getInt());
     }
 
+    /**
+     * Reads an {@link NBTShort} payload (16-bit signed) from the buffer.
+     *
+     * @param buffer the source buffer
+     * @return the short tag
+     */
     public static NBTShort readShort(ByteBuffer buffer) {
         return NBTShort.of(buffer.getShort());
     }
 
+    /**
+     * Reads an {@link NBTByte} payload (8-bit signed) from the buffer.
+     *
+     * @param buffer the source buffer
+     * @return the byte tag
+     */
     public static NBTByte readByte(ByteBuffer buffer) {
         return NBTByte.of(buffer.get());
     }
+
+
 
 }

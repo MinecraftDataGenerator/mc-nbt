@@ -46,11 +46,6 @@ import java.util.Spliterators;
  * should be avoided in performance-sensitive scenarios.
  */
 public class NBTLongArray implements NBTIterable<Long> {
-
-    public static NBTLongArrayBuilder builder() {
-        return new NBTLongArrayBuilder();
-    }
-
     private TLongList content;
 
     /**
@@ -63,15 +58,22 @@ public class NBTLongArray implements NBTIterable<Long> {
     }
 
     /**
+     * Creates a new {@link NBTLongArrayBuilder} instance.
+     *
+     * @return A new {@link NBTLongArrayBuilder} instance.
+     */
+    public static NBTLongArrayBuilder builder() {
+        return new NBTLongArrayBuilder();
+    }
+
+    /**
      * Creates a new NBTLongArray from a primitive long array.
      *
      * @param array initial 64-bit values
      * @return a new NBTLongArray instance
      */
     public static NBTLongArray of(long... array) {
-        return new NBTLongArray(
-                array.length == 0 ? new TLongArrayList() : new TLongArrayList(array)
-        );
+        return new NBTLongArray(array.length == 0 ? new TLongArrayList() : new TLongArrayList(array));
     }
 
     /**
@@ -144,6 +146,8 @@ public class NBTLongArray implements NBTIterable<Long> {
     }
 
     /**
+     * Retrieves the number of values stored in this array.
+     *
      * @return number of stored long values
      */
     public int size() {
@@ -220,11 +224,7 @@ public class NBTLongArray implements NBTIterable<Long> {
     @Deprecated(forRemoval = false)
     @Override
     public Spliterator<Long> spliterator() {
-        return Spliterators.spliterator(
-                iterator(),
-                size(),
-                Spliterator.ORDERED | Spliterator.NONNULL
-        );
+        return Spliterators.spliterator(iterator(), size(), Spliterator.ORDERED | Spliterator.NONNULL);
     }
 
     @Override

@@ -16,6 +16,11 @@
 
 package com.dietrichpaul.mcnbt;
 
+/**
+ * The base type for all NBT tag elements.
+ *
+ * @param <T> The type of value stored by this tag.
+ */
 public interface NBTTag<T> {
     /**
      * Retrieves the underlying type of this NBT tag.

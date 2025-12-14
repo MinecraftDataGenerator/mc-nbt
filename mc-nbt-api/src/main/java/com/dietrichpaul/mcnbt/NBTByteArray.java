@@ -46,10 +46,6 @@ public class NBTByteArray implements NBTIterable<Byte> {
 
     private TByteList content;
 
-    public static NBTByteArrayBuilder builder() {
-        return new NBTByteArrayBuilder();
-    }
-
     /**
      * Creates a new NBTByteArray using the provided primitive list.
      *
@@ -60,6 +56,16 @@ public class NBTByteArray implements NBTIterable<Byte> {
     }
 
     /**
+     * Creates a new {@link NBTByteArrayBuilder} to fluently construct an
+     * {@link NBTByteArray} instance.
+     *
+     * @return a new builder for {@link NBTByteArray}
+     */
+    public static NBTByteArrayBuilder builder() {
+        return new NBTByteArrayBuilder();
+    }
+
+    /**
      * Creates a new NBTByteArray from a byte array.
      * If the array is empty, a new list with default capacity is created.
      *
@@ -67,9 +73,7 @@ public class NBTByteArray implements NBTIterable<Byte> {
      * @return a new NBTByteArray instance
      */
     public static NBTByteArray of(byte... array) {
-        return new NBTByteArray(
-                array.length == 0 ? new TByteArrayList() : new TByteArrayList(array)
-        );
+        return new NBTByteArray(array.length == 0 ? new TByteArrayList() : new TByteArrayList(array));
     }
 
     /**
@@ -141,6 +145,8 @@ public class NBTByteArray implements NBTIterable<Byte> {
     }
 
     /**
+     * Returns the number of bytes currently stored in this array.
+     *
      * @return number of bytes stored
      */
     public int size() {
@@ -204,15 +210,13 @@ public class NBTByteArray implements NBTIterable<Byte> {
      * Returns a boxed spliterator for integration with Stream APIs.
      * <p>
      * This method boxes each value and should be avoided if performance matters.
+     *
+     * @return a {@link Spliterator} over boxed {@link Byte} values
      */
     @Deprecated(forRemoval = false)
     @Override
     public Spliterator<Byte> spliterator() {
-        return Spliterators.spliterator(
-                iterator(),
-                size(),
-                Spliterator.ORDERED | Spliterator.NONNULL
-        );
+        return Spliterators.spliterator(iterator(), size(), Spliterator.ORDERED | Spliterator.NONNULL);
     }
 
     /**
@@ -224,6 +228,11 @@ public class NBTByteArray implements NBTIterable<Byte> {
         return content.toArray();
     }
 
+    /**
+     * Returns the {@link NBTTagType} that identifies this tag as a byte array.
+     *
+     * @return {@link NBTTagType#BYTE_ARRAY}
+     */
     @Override
     public NBTTagType getTagType() {
         return NBTTagType.BYTE_ARRAY;

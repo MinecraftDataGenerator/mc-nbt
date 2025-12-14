@@ -39,41 +39,6 @@ import java.util.*;
  */
 public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
 
-    @Override
-    public NBTCompound asCompound() {
-        return this;
-    }
-
-    /**
-     * Internal wrapper class that stores a reference to an {@link NBTTagIdentifiable}
-     * along with its index in the {@link #tagList}.
-     * <p>
-     * Used for efficient removal and index updates without scanning the list.
-     */
-    public static class IndexedTag {
-        /**
-         * The actual identifiable tag stored in the compound
-         */
-        final NBTTagIdentifiable<?> tag;
-        /**
-         * The index of this tag in the {@link NBTCompound#tagList}
-         */
-        int index;
-
-        IndexedTag(NBTTagIdentifiable<?> tag, int index) {
-            this.tag = tag;
-            this.index = index;
-        }
-
-        public NBTTagIdentifiable<?> getTag() {
-            return tag;
-        }
-
-        public int getIndex() {
-            return index;
-        }
-    }
-
     /**
      * Map for O(1) lookup of tags by name
      */
@@ -87,9 +52,12 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
         this.tagMap = tagMap;
         this.tagList = tagList;
     }
-
     /**
      * Constructs an empty NBT Compound with specified initial capacities.
+     *
+     * @param mapCapacity the initial capacity of the backing map
+     * @param loadFactor  the load factor of the backing map
+     * @param listSize    the initial capacity of the backing list
      */
     public NBTCompound(int mapCapacity, float loadFactor, int listSize) {
         this(new LinkedHashMap<>(mapCapacity, loadFactor), new ArrayList<>(listSize));
@@ -103,13 +71,27 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
     }
 
     /**
-     * Returns a new {@link NBTCompoundBuilder} instance to fluently construct an NBTCompound.
+     * Returns a new {@link NBTCompoundBuilder} instance to fluently construct an
+     * {@link NBTCompound}.
      *
-     * @return A new Builder for NBTCompound.
+     * @return a new builder for {@code NBTCompound}
      * @see NBTCompoundBuilder
      */
     public static NBTCompoundBuilder builder() {
         return new NBTCompoundBuilder();
+    }
+
+    /**
+     * Returns this instance as an {@link NBTCompound}.
+     * <p>
+     * Convenience override to support fluent usage through the {@link NBTIterable}
+     * hierarchy without additional casts.
+     *
+     * @return this compound instance
+     */
+    @Override
+    public NBTCompound asCompound() {
+        return this;
     }
 
     /**
@@ -127,7 +109,8 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
             // Replace existing tag at the same index
             tagMap.put(tag.name(), new IndexedTag(tag, existing.index));
             tagList.set(existing.index, tag);
-        } else {
+        }
+        else {
             // New tag: append to the end
             int index = tagList.size();
             tagList.add(tag);
@@ -181,7 +164,8 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
      */
     public boolean remove(String name) {
         IndexedTag indexed = tagMap.remove(name);
-        if (indexed == null) return false;
+        if (indexed == null)
+            return false;
 
         int lastIndex = tagList.size() - 1;
         if (indexed.index != lastIndex) {
@@ -232,12 +216,30 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
         return NBTTagType.COMPOUND;
     }
 
-    // --- Utility Methods (Original) ---
-
+    /**
+     * Returns the internal map used for O(1) lookups of tags by name.
+     * <p>
+     * The map preserves insertion order (backed by a {@link LinkedHashMap}).
+     * Modifying the returned map will not affect this compound and is not
+     * supported. Treat the returned map as read-only.
+     *
+     * @return a view of the internal name-to-indexed-tag map
+     */
     public Map<String, IndexedTag> getTagMap() {
         return tagMap;
     }
 
+    // --- Utility Methods (Original) ---
+
+    /**
+     * Returns the internal list used for indexed access and iteration in
+     * insertion order.
+     * <p>
+     * Modifying the returned list will not affect this compound and is not
+     * supported. Treat the returned list as read-only.
+     *
+     * @return the internal list of identifiable tags
+     */
     public List<NBTTagIdentifiable<?>> getTagList() {
         return tagList;
     }
@@ -254,15 +256,15 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
     /**
      * Retrieves a nested NBT Compound tag.
      *
-     * @param key The name of the tag to retrieve.
-     * @return The nested {@code NBTCompound} instance.
-     * @throws IllegalStateException If the tag is missing or is not a Compound tag.
+     * @param key the name of the tag to retrieve
+     * @return the nested {@code NBTCompound} instance
+     * @throws IllegalStateException if the tag is missing or is not a Compound tag
      *
-     *                               <h2>Example Usage:</h2>
+     *                               <h4>Example</h4>
      *                               <pre>{@code
-     *                                                                                           int health = root.getCompound("Stats") // Returns NBTCompound
-     *                                                                                           .getInteger("Health"); // Returns primitive int
-     *                                                                                           }</pre>
+     *                               int health = root.getCompound("Stats") // returns NBTCompound
+     *                                               .getInteger("Health"); // returns primitive int
+     *                               }</pre>
      */
     public NBTCompound getCompound(String key) {
         NBTTag<?> tag = get(key);
@@ -410,5 +412,47 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
             throw new IllegalStateException("Tag '" + key + "' is not a Double tag.");
         }
         return ((NBTNumberPrimitive<?>) tag).asDouble();
+    }
+
+    /**
+     * Internal wrapper class that stores a reference to an {@link NBTTagIdentifiable}
+     * along with its index in the {@link #tagList}.
+     * <p>
+     * Used for efficient removal and index updates without scanning the list.
+     */
+    public static class IndexedTag {
+        /**
+         * The actual identifiable tag stored in the compound.
+         */
+        final NBTTagIdentifiable<?> tag;
+        /**
+         * The index of this tag in the {@link NBTCompound#tagList}.
+         */
+        int index;
+
+        IndexedTag(NBTTagIdentifiable<?> tag, int index) {
+            this.tag = tag;
+            this.index = index;
+        }
+
+        /**
+         * Returns the wrapped {@link NBTTagIdentifiable}.
+         *
+         * @return the identifiable tag
+         */
+        public NBTTagIdentifiable<?> getTag() {
+            return tag;
+        }
+
+        /**
+         * Returns the current index of this tag within the owning compound's
+         * internal list. The index may change after removals that reorder
+         * elements (swap-last removal strategy).
+         *
+         * @return the zero-based index
+         */
+        public int getIndex() {
+            return index;
+        }
     }
 }

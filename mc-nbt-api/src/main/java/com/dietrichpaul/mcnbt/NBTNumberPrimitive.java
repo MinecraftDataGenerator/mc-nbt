@@ -16,43 +16,103 @@
 
 package com.dietrichpaul.mcnbt;
 
+/**
+ * An {@link NBTPrimitive} whose underlying value is a {@link Number}.
+ * <p>
+ * This interface provides default implementations for all primitive and string
+ * conversions based on {@link Number}'s widening/narrowing conversion methods.
+ * Implementations only need to supply the boxed numeric value via
+ * {@link #getPrimitiveType()} and the appropriate {@link NBTTagType}.
+ * <ul>
+ *     <li>{@link #asString()} delegates to {@link Number#toString()}.</li>
+ *     <li>{@link #asBoolean()} returns {@code true} if {@code intValue() != 0}.</li>
+ *     <li>{@link #asByte()} delegates to {@link Number#byteValue()}.</li>
+ *     <li>{@link #asShort()} delegates to {@link Number#shortValue()}.</li>
+ *     <li>{@link #asInt()} delegates to {@link Number#intValue()}.</li>
+ *     <li>{@link #asLong()} delegates to {@link Number#longValue()}.</li>
+ *     <li>{@link #asFloat()} delegates to {@link Number#floatValue()}.</li>
+ *     <li>{@link #asDouble()} delegates to {@link Number#doubleValue()}.</li>
+ * </ul>
+ *
+ * @param <T> the boxed numeric type stored by this tag
+ */
 public interface NBTNumberPrimitive<T extends Number> extends NBTPrimitive<T> {
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Default implementation returns {@code getPrimitiveType().doubleValue()}.
+     */
     @Override
     default double asDouble() {
         return getPrimitiveType().doubleValue();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Default implementation returns {@code getPrimitiveType().toString()}.
+     */
     @Override
     default String asString() {
         return getPrimitiveType().toString();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For numeric primitives, this is {@code getPrimitiveType().intValue() != 0}.
+     */
     @Override
     default boolean asBoolean() {
         return getPrimitiveType().intValue() != 0;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Default implementation returns {@code getPrimitiveType().byteValue()}.
+     */
     @Override
     default byte asByte() {
         return getPrimitiveType().byteValue();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Default implementation returns {@code getPrimitiveType().shortValue()}.
+     */
     @Override
     default short asShort() {
         return getPrimitiveType().shortValue();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Default implementation returns {@code getPrimitiveType().intValue()}.
+     */
     @Override
     default int asInt() {
         return getPrimitiveType().intValue();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Default implementation returns {@code getPrimitiveType().longValue()}.
+     */
     @Override
     default long asLong() {
         return getPrimitiveType().longValue();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Default implementation returns {@code getPrimitiveType().floatValue()}.
+     */
     @Override
     default float asFloat() {
         return getPrimitiveType().floatValue();

@@ -140,6 +140,22 @@ public enum NBTTagType {
         this.displayName = displayName;
     }
 
+    /**
+     * Looks up an {@link NBTTagType} by its human‑readable display name.
+     * <p>
+     * The comparison is case-sensitive. Typical values are
+     * {@code "byte"}, {@code "short"}, {@code "int"}, {@code "long"},
+     * {@code "float"}, {@code "double"}, {@code "byte_array"},
+     * {@code "string"}, {@code "list"}, {@code "compound"},
+     * {@code "int_array"}, and {@code "long_array"}.
+     * <p>
+     * Note: The {@link #NULL} type has no display name and therefore is never
+     * returned by this method. Passing a {@code null} name will result in a
+     * {@link NullPointerException}.
+     *
+     * @param name the display name to resolve (must not be {@code null})
+     * @return the corresponding tag type, or {@code null} if no type matches
+     */
     public static NBTTagType getByName(String name) {
         for (NBTTagType type : values()) {
             if (type.displayName.equals(name)) {
@@ -149,20 +165,31 @@ public enum NBTTagType {
         return null;
     }
 
-    public String getName() {
-        return displayName;
-    }
-
     /**
      * Returns the tag type corresponding to the numeric NBT ID,
      * or {@code null} if the ID is outside the valid range.
+     *
+     * @param id The ID of the tag type to look up.
+     * @return The tag type associated with the given ID.
      */
     public static NBTTagType getTagById(int id) {
-        System.out.println("GET " + id);
         if (id < 0 || id >= values().length) {
             return null;
         }
         return values()[id];
+    }
+
+    /**
+     * Returns the human‑readable display name for this tag type.
+     * <p>
+     * For most types this is a lower‑case identifier such as
+     * {@code "int"} or {@code "compound"}. The {@link #NULL}
+     * (TAG_End) type has no display name and returns {@code null}.
+     *
+     * @return the display name, or {@code null} for {@link #NULL}
+     */
+    public String getName() {
+        return displayName;
     }
 
     /**
@@ -243,6 +270,8 @@ public enum NBTTagType {
      *     <li>...</li>
      *     <li>12 = TAG_Long_Array</li>
      * </ul>
+     *
+     * @return The NBT type ID of this tag type.
      */
     public int getId() {
         return ordinal();
