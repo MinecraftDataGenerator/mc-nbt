@@ -16,6 +16,7 @@
 
 import dev.karmakrafts.conventions.apache2License
 import dev.karmakrafts.conventions.setRepository
+import dev.karmakrafts.conventions.signPublications
 import java.net.URI
 import java.time.Duration
 
@@ -41,11 +42,14 @@ subprojects {
         apache2License()
         setRepository("github.com", "MinecraftDataGenerator/mc-nbt")
     }
+
+    signing {
+        signPublications()
+    }
 }
 
 tasks {
-    @Suppress("UNUSED")
-    val printVersion by registering {
+    @Suppress("UNUSED") val printVersion by registering {
         group = "ci"
         doLast {
             println(project.version)
