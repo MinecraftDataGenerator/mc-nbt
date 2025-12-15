@@ -3,6 +3,10 @@ name: Publish to Sonatype
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 env:
   SONATYPE_USERNAME: "${{ secrets.SONATYPE_USERNAME }}"
   SONATYPE_PASSWORD: "${{ secrets.SONATYPE_PASSWORD }}"
