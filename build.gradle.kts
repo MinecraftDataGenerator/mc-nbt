@@ -70,12 +70,12 @@ subprojects {
 }
 
 tasks {
-    @Suppress("UNUSED") val printVersion by registering {
+    val printVersion by registering {
         group = "ci"
-        // Project version must be an explicit input so config cache doesn't break
-        inputs.property("version", project.version)
+        val v = project.version.toString()
+        inputs.property("version", v)
         doLast {
-            println(project.version)
+            println(v)
         }
     }
 }
