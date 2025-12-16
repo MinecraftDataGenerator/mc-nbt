@@ -57,20 +57,7 @@ public class NIOToNBT {
         }
 
         throw new IllegalArgumentException("No deserializer for type: " + type.getName());
-    }    private static final Map<NBTTagType, NIODeserializer<?>> DESERIALIZER_MAP = new HashMap<>() {{
-        put(NBTTagType.BYTE, NIOToNBT::readByte);
-        put(NBTTagType.SHORT, NIOToNBT::readShort);
-        put(NBTTagType.INT, NIOToNBT::readInt);
-        put(NBTTagType.LONG, NIOToNBT::readLong);
-        put(NBTTagType.FLOAT, NIOToNBT::readFloat);
-        put(NBTTagType.DOUBLE, NIOToNBT::readDouble);
-        put(NBTTagType.BYTE_ARRAY, NIOToNBT::readByteArray);
-        put(NBTTagType.INT_ARRAY, NIOToNBT::readIntArray);
-        put(NBTTagType.LONG_ARRAY, NIOToNBT::readLongArray);
-        put(NBTTagType.STRING, NIOToNBT::readString);
-        put(NBTTagType.LIST, NIOToNBT::readList);
-        put(NBTTagType.COMPOUND, NIOToNBT::readCompound);
-    }};
+    }
 
     /**
      * Reads a single named NBT tag from the given {@link ByteBuffer}.
@@ -100,7 +87,20 @@ public class NIOToNBT {
         NBTTag<?> tag = elementDeserializer.deserialize(buffer);
 
         return new NBTTagIdentifiable<>(name, tag);
-    }
+    }    private static final Map<NBTTagType, NIODeserializer<?>> DESERIALIZER_MAP = new HashMap<>() {{
+        put(NBTTagType.BYTE, NIOToNBT::readByte);
+        put(NBTTagType.SHORT, NIOToNBT::readShort);
+        put(NBTTagType.INT, NIOToNBT::readInt);
+        put(NBTTagType.LONG, NIOToNBT::readLong);
+        put(NBTTagType.FLOAT, NIOToNBT::readFloat);
+        put(NBTTagType.DOUBLE, NIOToNBT::readDouble);
+        put(NBTTagType.BYTE_ARRAY, NIOToNBT::readByteArray);
+        put(NBTTagType.INT_ARRAY, NIOToNBT::readIntArray);
+        put(NBTTagType.LONG_ARRAY, NIOToNBT::readLongArray);
+        put(NBTTagType.STRING, NIOToNBT::readString);
+        put(NBTTagType.LIST, NIOToNBT::readList);
+        put(NBTTagType.COMPOUND, NIOToNBT::readCompound);
+    }};
 
     /**
      * Reads a {@link NBTCompound} payload from the given buffer.
@@ -286,6 +286,7 @@ public class NIOToNBT {
     public static NBTByte readByte(ByteBuffer buffer) {
         return NBTByte.of(buffer.get());
     }
+
 
 
 

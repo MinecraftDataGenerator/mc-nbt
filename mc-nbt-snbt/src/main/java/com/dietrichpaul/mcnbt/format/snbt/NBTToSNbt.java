@@ -19,15 +19,28 @@ package com.dietrichpaul.mcnbt.format.snbt;
 import com.dietrichpaul.mcnbt.*;
 import com.dietrichpaul.mcnbt.primitive.*;
 
-import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Utility for serializing {@link NBTTag} trees into SNBT (stringified NBT).
+ * <p>
+ * Use {@link #serialize(NBTTag, SNbtSyntax)} to convert a tag to its textual
+ * representation for a specific Minecraft syntax profile.
+ */
 public class NBTToSNbt {
     private static final Pattern NO_QUOTE_PATTERN = Pattern.compile("[A-Za-z0-9._+-]+");
 
     private NBTToSNbt() {
     }
 
+    /**
+     * Serializes an NBT tag to SNBT using the provided syntax profile.
+     *
+     * @param tag    the root tag to serialize
+     * @param syntax the syntax profile controlling quoting, suffixes, and arrays
+     * @return the SNBT string
+     * @throws IllegalArgumentException if an unknown tag type is encountered
+     */
     public static String serialize(NBTTag<?> tag, SNbtSyntax syntax) {
         StringBuilder sb = new StringBuilder();
         serialize(tag, sb, syntax);
@@ -46,7 +59,8 @@ public class NBTToSNbt {
                 sb.append("[B;");
                 NBTByteArray arr = (NBTByteArray) tag;
                 for (int i = 0; i < arr.size(); i++) {
-                    if (i > 0) sb.append(",");
+                    if (i > 0)
+                        sb.append(",");
                     sb.append(arr.get(i)).append("B");
                 }
                 sb.append("]");
@@ -55,7 +69,8 @@ public class NBTToSNbt {
                 sb.append("[I;");
                 NBTIntArray arr = (NBTIntArray) tag;
                 for (int i = 0; i < arr.size(); i++) {
-                    if (i > 0) sb.append(",");
+                    if (i > 0)
+                        sb.append(",");
                     sb.append(arr.get(i));
                 }
                 sb.append("]");
@@ -64,7 +79,8 @@ public class NBTToSNbt {
                 sb.append("[L;");
                 NBTLongArray arr = (NBTLongArray) tag;
                 for (int i = 0; i < arr.size(); i++) {
-                    if (i > 0) sb.append(",");
+                    if (i > 0)
+                        sb.append(",");
                     sb.append(arr.get(i)).append("L");
                 }
                 sb.append("]");
@@ -75,7 +91,8 @@ public class NBTToSNbt {
                 NBTList<?> list = (NBTList<?>) tag;
                 int i = 0;
                 for (NBTTag<?> element : list) {
-                    if (i++ > 0) sb.append(",");
+                    if (i++ > 0)
+                        sb.append(",");
                     // Legacy formats (1.7) technically used index:value, but simplified serialization usually omits it
                     serialize(element, sb, syntax);
                 }
@@ -86,7 +103,8 @@ public class NBTToSNbt {
                 NBTCompound compound = (NBTCompound) tag;
                 int i = 0;
                 for (NBTTagIdentifiable<?> entry : compound) {
-                    if (i++ > 0) sb.append(",");
+                    if (i++ > 0)
+                        sb.append(",");
                     sb.append(handleKey(entry.name(), syntax)).append(":");
                     serialize(entry.tag(), sb, syntax);
                 }
@@ -97,13 +115,15 @@ public class NBTToSNbt {
     }
 
     private static String handleKey(String key, SNbtSyntax syntax) {
-        if (syntax.isLegacyParser()) return key; // 1.7/1.8 didn't strict quote keys usually
+        if (syntax.isLegacyParser())
+            return key; // 1.7/1.8 didn't strict quote keys usually
         return escape(key, syntax);
     }
 
     private static String escape(String s, SNbtSyntax syntax) {
         if (syntax == SNbtSyntax.V1_12 || syntax == SNbtSyntax.V1_13 || syntax == SNbtSyntax.V1_14) {
-            if (NO_QUOTE_PATTERN.matcher(s).matches()) return s;
+            if (NO_QUOTE_PATTERN.matcher(s).matches())
+                return s;
         }
 
         StringBuilder sb = new StringBuilder();
@@ -114,7 +134,8 @@ public class NBTToSNbt {
 
         sb.append(quote);
         for (char c : s.toCharArray()) {
-            if (c == '\\' || c == quote) sb.append('\\');
+            if (c == '\\' || c == quote)
+                sb.append('\\');
             sb.append(c);
         }
         sb.append(quote);

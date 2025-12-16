@@ -18,11 +18,23 @@ package com.dietrichpaul.mcnbt.format.snbt;
 
 import com.dietrichpaul.mcnbt.NBTTag;
 
+/**
+ * Utility for parsing SNBT (stringified NBT) into {@link NBTTag} instances.
+ * <p>
+ * This class exposes convenience methods to parse SNBT strings following
+ * different Minecraft versions' syntax rules. For most use cases, prefer
+ * {@link #parse(String)} which uses the latest supported syntax.
+ */
 public class SNbtToNBT {
-    private SNbtToNBT() {}
+    private SNbtToNBT() {
+    }
 
     /**
-     * Parses an SNBT string using the latest syntax rules (1.21.5+).
+     * Parses an SNBT string using the latest supported syntax rules (currently 1.21.5+).
+     *
+     * @param snbt the SNBT input string (e.g. "{foo:1b}")
+     * @return the parsed {@link NBTTag} tree
+     * @throws SNbtException if the input cannot be parsed according to the latest syntax rules
      */
     public static NBTTag<?> parse(String snbt) {
         return parse(snbt, SNbtSyntax.V1_21_5);
@@ -30,11 +42,17 @@ public class SNbtToNBT {
 
     /**
      * Parses an SNBT string using specific version rules.
+     *
+     * @param snbt   the SNBT input string
+     * @param syntax the syntax profile that defines parsing behavior
+     * @return the parsed {@link NBTTag} tree
+     * @throws SNbtException if parsing fails for the provided syntax
      */
     public static NBTTag<?> parse(String snbt, SNbtSyntax syntax) {
         if (syntax.isLegacyParser()) {
             return new LegacyParser(snbt).parse();
-        } else {
+        }
+        else {
             return new ModernParser(snbt, syntax).parse();
         }
     }

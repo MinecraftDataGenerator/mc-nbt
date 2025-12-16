@@ -52,6 +52,7 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
         this.tagMap = tagMap;
         this.tagList = tagList;
     }
+
     /**
      * Constructs an empty NBT Compound with specified initial capacities.
      *
@@ -262,9 +263,9 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
      *
      *                               <h4>Example</h4>
      *                               <pre>{@code
-     *                               int health = root.getCompound("Stats") // returns NBTCompound
-     *                                               .getInteger("Health"); // returns primitive int
-     *                               }</pre>
+     *                                                             int health = root.getCompound("Stats") // returns NBTCompound
+     *                                                                             .getInteger("Health"); // returns primitive int
+     *                                                             }</pre>
      */
     public NBTCompound getCompound(String key) {
         NBTTag<?> tag = get(key);

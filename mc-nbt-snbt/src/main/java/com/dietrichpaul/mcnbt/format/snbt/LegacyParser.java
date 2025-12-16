@@ -16,7 +16,10 @@
 
 package com.dietrichpaul.mcnbt.format.snbt;
 
-import com.dietrichpaul.mcnbt.*;
+import com.dietrichpaul.mcnbt.NBTCompound;
+import com.dietrichpaul.mcnbt.NBTIntArray;
+import com.dietrichpaul.mcnbt.NBTList;
+import com.dietrichpaul.mcnbt.NBTTag;
 import com.dietrichpaul.mcnbt.primitive.*;
 import gnu.trove.list.array.TIntArrayList;
 
@@ -32,7 +35,8 @@ class LegacyParser {
     }
 
     public NBTTag<?> parse() {
-        if (content.startsWith("{")) return parseCompound(content);
+        if (content.startsWith("{"))
+            return parseCompound(content);
         // Fallback for non-compounds if necessary, usually legacy expects compound root
         return parsePrimitive(content);
     }
@@ -52,7 +56,8 @@ class LegacyParser {
                 String value = findValue(pair);
                 compound.put(name, parseAny(value));
 
-                if (s.length() < pair.length() + 1) break;
+                if (s.length() < pair.length() + 1)
+                    break;
                 s = s.substring(pair.length() + 1);
             }
         }
@@ -61,13 +66,16 @@ class LegacyParser {
 
     private NBTTag<?> parseAny(String s) {
         s = s.trim();
-        if (s.startsWith("{")) return parseCompound(s);
-        if (s.startsWith("[") && !s.matches("\\[[-\\d|,\\s]+]")) return parseList(s);
+        if (s.startsWith("{"))
+            return parseCompound(s);
+        if (s.startsWith("[") && !s.matches("\\[[-\\d|,\\s]+]"))
+            return parseList(s);
         return parsePrimitive(s);
     }
 
     private NBTList<?> parseList(String s) {
-        if (!s.startsWith("[") || !s.endsWith("]")) throw new SNbtException("Invalid list: " + s);
+        if (!s.startsWith("[") || !s.endsWith("]"))
+            throw new SNbtException("Invalid list: " + s);
         s = s.substring(1, s.length() - 1);
         List<NBTTag<?>> list = new ArrayList<>();
 
@@ -78,10 +86,12 @@ class LegacyParser {
                 String valueStr = pair.contains(":") ? findValue(pair) : pair;
                 try {
                     list.add(parseAny(valueStr));
-                } catch (Exception ignored) {
+                }
+                catch (Exception ignored) {
                     // Legacy parsers were lenient
                 }
-                if (s.length() < pair.length() + 1) break;
+                if (s.length() < pair.length() + 1)
+                    break;
                 s = s.substring(pair.length() + 1);
             }
         }
@@ -100,10 +110,14 @@ class LegacyParser {
                 return NBTLong.of(Long.parseLong(value.substring(0, value.length() - 1)));
             if (value.matches("[-+]?[0-9]+[s|S]"))
                 return NBTShort.of(Short.parseShort(value.substring(0, value.length() - 1)));
-            if (value.matches("[-+]?[0-9]+")) return NBTInt.of(Integer.parseInt(value));
-            if (value.matches("[-+]?[0-9]*\\.?[0-9]+")) return NBTDouble.of(Double.parseDouble(value));
-            if (value.equalsIgnoreCase("true")) return NBTByte.of((byte) 1);
-            if (value.equalsIgnoreCase("false")) return NBTByte.of((byte) 0);
+            if (value.matches("[-+]?[0-9]+"))
+                return NBTInt.of(Integer.parseInt(value));
+            if (value.matches("[-+]?[0-9]*\\.?[0-9]+"))
+                return NBTDouble.of(Double.parseDouble(value));
+            if (value.equalsIgnoreCase("true"))
+                return NBTByte.of((byte) 1);
+            if (value.equalsIgnoreCase("false"))
+                return NBTByte.of((byte) 0);
 
             // Legacy IntArray detection
             if (value.startsWith("[") && value.endsWith("]")) {
@@ -111,11 +125,13 @@ class LegacyParser {
                 String[] parts = content.split(",");
                 TIntArrayList ints = new TIntArrayList();
                 for (String p : parts) {
-                    if (!p.trim().isEmpty()) ints.add(Integer.parseInt(p.trim()));
+                    if (!p.trim().isEmpty())
+                        ints.add(Integer.parseInt(p.trim()));
                 }
                 return new NBTIntArray(ints);
             }
-        } catch (NumberFormatException ignored) {
+        }
+        catch (NumberFormatException ignored) {
         }
 
         if (value.startsWith("\"") && value.endsWith("\"")) {
@@ -126,7 +142,8 @@ class LegacyParser {
 
     private String findPair(String s, boolean isList) {
         int sep = s.indexOf(':');
-        if (sep < 0 && !isList) throw new SNbtException("No separator found");
+        if (sep < 0 && !isList)
+            throw new SNbtException("No separator found");
         // Logic simplified: Iterate chars to find split point based on brackets balance
         int i = (sep < 0) ? 0 : sep + 1;
         boolean quoted = false;
@@ -135,12 +152,18 @@ class LegacyParser {
         for (; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c == '"') {
-                if (i == 0 || s.charAt(i - 1) != '\\') quoted = !quoted;
-            } else if (!quoted) {
-                if (c == '{' || c == '[') stack.push(c);
-                if (c == '}' && (stack.isEmpty() || stack.pop() != '{')) throw new SNbtException("Unbalanced {}");
-                if (c == ']' && (stack.isEmpty() || stack.pop() != '[')) throw new SNbtException("Unbalanced []");
-                if (c == ',' && stack.isEmpty()) return s.substring(0, i);
+                if (i == 0 || s.charAt(i - 1) != '\\')
+                    quoted = !quoted;
+            }
+            else if (!quoted) {
+                if (c == '{' || c == '[')
+                    stack.push(c);
+                if (c == '}' && (stack.isEmpty() || stack.pop() != '{'))
+                    throw new SNbtException("Unbalanced {}");
+                if (c == ']' && (stack.isEmpty() || stack.pop() != '['))
+                    throw new SNbtException("Unbalanced []");
+                if (c == ',' && stack.isEmpty())
+                    return s.substring(0, i);
             }
         }
         return s.substring(0, i);
@@ -148,13 +171,15 @@ class LegacyParser {
 
     private String findKey(String s) {
         int idx = s.indexOf(':');
-        if (idx < 0) return "";
+        if (idx < 0)
+            return "";
         return s.substring(0, idx).trim();
     }
 
     private String findValue(String s) {
         int idx = s.indexOf(':');
-        if (idx < 0) return s.trim();
+        if (idx < 0)
+            return s.trim();
         return s.substring(idx + 1).trim();
     }
 }
