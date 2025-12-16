@@ -37,6 +37,8 @@ public class SNbtStringReader {
     }
 
     /**
+     * Determines if this reader has more data to read.
+     *
      * @return true if there is at least one character available to read from the current cursor
      */
     public boolean canRead() {
@@ -191,6 +193,8 @@ public class SNbtStringReader {
     }
 
     /**
+     * Retrieves the current position within the buffer of this reader.
+     *
      * @return the current zero-based cursor index within the buffer
      */
     public int getCursor() {
@@ -198,6 +202,8 @@ public class SNbtStringReader {
     }
 
     /**
+     * Retrieve the underlying buffer string of this reader instance.
+     *
      * @return the underlying buffer string
      */
     public String getString() {

@@ -24,11 +24,20 @@ package com.dietrichpaul.mcnbt.format.snbt;
  * {@link NBTToSNbt#serialize(com.dietrichpaul.mcnbt.NBTTag, SNbtSyntax)}.
  */
 public enum SNbtSyntax {
-    V1_7(true, false, false, false), V1_8(true, false, false, false), V1_12(false, false, true, false), V1_13(false,
-        false,
-        true,
-        false), // 1.13 parsing logic is mostly 1.12 but strictly no legacy quirks
-    V1_14(false, true, true, false), V1_21_5(false, true, true, true);
+    // @formatter:off
+    /** Every version from 1.7 until 1.8 */
+    V1_7    (true, false, false, false),
+    /** Every version from 1.8 until 1.12 */
+    V1_8    (true, false, false, false),
+    /** Every version from 1.12 until 1.13 */
+    V1_12   (false, false, true, false),
+    /** Every version from 1.13 until 1.14 */
+    V1_13   (false, false, true, false), // 1.13 parsing logic is mostly 1.12 but strictly no legacy quirks
+    /** Every version from 1.14 until 1.21.5 */
+    V1_14   (false, true, true, false),
+    /** Every version from 1.21.5 going onward */
+    V1_21_5 (false, true, true, true);
+    // @formatter:on
 
     private final boolean legacyParser; // Uses the old 1.7/1.8 weird parsing logic
     private final boolean allowSingleQuotes;
@@ -43,6 +52,8 @@ public enum SNbtSyntax {
     }
 
     /**
+     * Determines whether this syntax instance using legacy parsing behavior.
+     *
      * @return whether to use the legacy 1.7/1.8 parsing behavior
      */
     public boolean isLegacyParser() {
@@ -50,6 +61,8 @@ public enum SNbtSyntax {
     }
 
     /**
+     * Determines whether single quotes are allowed with this syntax.
+     *
      * @return whether single quotes are allowed for strings when serializing/parsing
      */
     public boolean isAllowSingleQuotes() {
@@ -57,6 +70,8 @@ public enum SNbtSyntax {
     }
 
     /**
+     * Determines whether numeric type suffixes are used with this syntax.
+     *
      * @return whether numeric type suffixes like {@code 5b}, {@code 12s}, {@code 1L} are used
      */
     public boolean isUseTypeSuffix() {
@@ -64,6 +79,8 @@ public enum SNbtSyntax {
     }
 
     /**
+     * Determines whether this syntax uses modern array notation.
+     *
      * @return whether modern array notation like {@code [I; 1, 2, 3]} is enforced
      */
     public boolean isModernArrays() {
