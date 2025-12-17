@@ -126,11 +126,13 @@ public class SNbtStringReader {
      * @return true if the buffer has {@code s} at the current cursor
      */
     public boolean matches(String s) {
-        if (!canRead(s.length()))
+        if (!canRead(s.length())) {
             return false;
+        }
         for (int i = 0; i < s.length(); i++) {
-            if (buffer.charAt(index + i) != s.charAt(i))
+            if (buffer.charAt(index + i) != s.charAt(i)) {
                 return false;
+            }
         }
         return true;
     }
@@ -157,8 +159,9 @@ public class SNbtStringReader {
      * @throws SNbtException if the string is not properly quoted or contains invalid escapes
      */
     public String readQuotedString() {
-        if (!canRead())
+        if (!canRead()) {
             return "";
+        }
         char quote = read();
         if (quote != '"' && quote != '\'') {
             throw new SNbtException("Expected quote", buffer, index);

@@ -49,4 +49,27 @@ public interface NBTIterable<T> extends NBTTag<T>, Iterable<T> {
     default NBTIterable<T> asIterable() {
         return this;
     }
+
+    /**
+     * Returns the number of elements exposed by this iterable tag.
+     * <p>
+     * The returned value corresponds to the valid index range
+     * {@code [0, size())} for {@link #getEntry(int)}.
+     *
+     * @return the number of elements contained in this tag
+     */
+    int size();
+
+    /**
+     * Returns the element at the specified index.
+     * <p>
+     * The index must be in the range {@code 0 <= i < size()}.
+     * Implementations may choose to return boxed values even if the
+     * underlying storage is primitive-based.
+     *
+     * @param i the index of the element to return
+     * @return the element at the specified index
+     * @throws IndexOutOfBoundsException if {@code i} is out of range
+     */
+    T getEntry(int i);
 }

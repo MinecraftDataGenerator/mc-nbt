@@ -135,6 +135,11 @@ public class NBTLongArray implements NBTIterable<Long> {
         return content.get(index);
     }
 
+    @Override
+    public Long getEntry(int i) {
+        return get(i);
+    }
+
     /**
      * Replaces the value at the given index with a new long.
      *

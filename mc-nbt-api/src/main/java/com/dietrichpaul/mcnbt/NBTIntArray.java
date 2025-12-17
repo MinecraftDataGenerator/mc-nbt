@@ -147,6 +147,11 @@ public class NBTIntArray implements NBTIterable<Integer> {
         content.set(index, value);
     }
 
+    @Override
+    public Integer getEntry(int i) {
+        return get(i);
+    }
+
     /**
      * Returns the number of ints currently stored in this array.
      *

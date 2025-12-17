@@ -144,6 +144,11 @@ public class NBTByteArray implements NBTIterable<Byte> {
         content.set(index, value);
     }
 
+    @Override
+    public Byte getEntry(int i) {
+        return get(i);
+    }
+
     /**
      * Returns the number of bytes currently stored in this array.
      *

@@ -48,8 +48,9 @@ public class SNbtException extends RuntimeException {
     private static String trim(String rawTag, int position) {
         StringBuilder out = new StringBuilder();
         int end = Math.min(rawTag.length(), position);
-        if (end > 35)
+        if (end > 35) {
             out.append("...");
+        }
         out.append(rawTag, Math.max(0, end - 35), end).append("<--[HERE]");
         return out.toString();
     }

@@ -229,6 +229,11 @@ public class NBTList<T extends NBTTag<?>> implements NBTIterable<T> {
         return list.get(index);
     }
 
+    @Override
+    public T getEntry(int i) {
+        return get(i);
+    }
+
     /**
      * Returns the number of elements in this list.
      *

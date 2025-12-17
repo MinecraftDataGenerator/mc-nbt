@@ -254,6 +254,11 @@ public class NBTCompound implements NBTIterable<NBTTagIdentifiable<?>> {
         return tagList.size();
     }
 
+    @Override
+    public NBTTagIdentifiable<?> getEntry(int i) {
+        return tagList.get(i);
+    }
+
     /**
      * Retrieves a nested NBT Compound tag.
      *

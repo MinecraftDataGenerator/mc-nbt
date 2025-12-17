@@ -28,9 +28,18 @@ import java.util.regex.Pattern;
  * representation for a specific Minecraft syntax profile.
  */
 public class NBTToSNbt {
-    private static final Pattern NO_QUOTE_PATTERN = Pattern.compile("[A-Za-z0-9._+-]+");
+    private static final Pattern NO_QUOTE_PATTERN =
+        Pattern.compile("[A-Za-z0-9._+-]+");
+
+    private static final char COMMA = ',';
+    private static final char COLON = ':';
+
+    private static final String BYTE_ARRAY_PREFIX = "[B;";
+    private static final String INT_ARRAY_PREFIX  = "[I;";
+    private static final String LONG_ARRAY_PREFIX = "[L;";
 
     private NBTToSNbt() {
+        // utility class
     }
 
     /**
@@ -49,95 +58,104 @@ public class NBTToSNbt {
 
     private static void serialize(NBTTag<?> tag, StringBuilder sb, SNbtSyntax syntax) {
         switch (tag.getTagType()) {
-            case BYTE -> sb.append(((NBTByte) tag).asByte()).append("b");
-            case SHORT -> sb.append(((NBTShort) tag).asShort()).append("s");
+
+            case BYTE -> sb.append(((NBTByte) tag).asByte()).append('b');
+            case SHORT -> sb.append(((NBTShort) tag).asShort()).append('s');
             case INT -> sb.append(((NBTInt) tag).asInt());
-            case LONG -> sb.append(((NBTLong) tag).asLong()).append("L");
-            case FLOAT -> sb.append(((NBTFloat) tag).asFloat()).append("f");
-            case DOUBLE -> sb.append(((NBTDouble) tag).asDouble()).append("d");
-            case BYTE_ARRAY -> {
-                sb.append("[B;");
-                NBTByteArray arr = (NBTByteArray) tag;
-                for (int i = 0; i < arr.size(); i++) {
-                    if (i > 0)
-                        sb.append(",");
-                    sb.append(arr.get(i)).append("B");
-                }
-                sb.append("]");
-            }
-            case INT_ARRAY -> {
-                sb.append("[I;");
-                NBTIntArray arr = (NBTIntArray) tag;
-                for (int i = 0; i < arr.size(); i++) {
-                    if (i > 0)
-                        sb.append(",");
-                    sb.append(arr.get(i));
-                }
-                sb.append("]");
-            }
-            case LONG_ARRAY -> {
-                sb.append("[L;");
-                NBTLongArray arr = (NBTLongArray) tag;
-                for (int i = 0; i < arr.size(); i++) {
-                    if (i > 0)
-                        sb.append(",");
-                    sb.append(arr.get(i)).append("L");
-                }
-                sb.append("]");
-            }
+            case LONG -> sb.append(((NBTLong) tag).asLong()).append('L');
+            case FLOAT -> sb.append(((NBTFloat) tag).asFloat()).append('f');
+            case DOUBLE -> sb.append(((NBTDouble) tag).asDouble()).append('d');
+
+            case BYTE_ARRAY -> serializeArray((NBTByteArray) tag, sb, BYTE_ARRAY_PREFIX, "B");
+            case INT_ARRAY -> serializeArray((NBTIntArray) tag, sb, INT_ARRAY_PREFIX, "");
+            case LONG_ARRAY -> serializeArray((NBTLongArray) tag, sb, LONG_ARRAY_PREFIX, "L");
+
             case STRING -> sb.append(escape(((NBTString) tag).asString(), syntax));
+
             case LIST -> {
-                sb.append("[");
+                sb.append('[');
                 NBTList<?> list = (NBTList<?>) tag;
-                int i = 0;
+                int index = 0;
+
                 for (NBTTag<?> element : list) {
-                    if (i++ > 0)
-                        sb.append(",");
-                    // Legacy formats (1.7) technically used index:value, but simplified serialization usually omits it
+                    if (index++ > 0) {
+                        sb.append(COMMA);
+                    }
                     serialize(element, sb, syntax);
                 }
-                sb.append("]");
+                sb.append(']');
             }
+
             case COMPOUND -> {
-                sb.append("{");
+                sb.append('{');
                 NBTCompound compound = (NBTCompound) tag;
-                int i = 0;
+                int index = 0;
+
                 for (NBTTagIdentifiable<?> entry : compound) {
-                    if (i++ > 0)
-                        sb.append(",");
-                    sb.append(handleKey(entry.name(), syntax)).append(":");
+                    if (index++ > 0) {
+                        sb.append(COMMA);
+                    }
+                    sb.append(handleKey(entry.name(), syntax))
+                        .append(COLON);
                     serialize(entry.tag(), sb, syntax);
                 }
-                sb.append("}");
+                sb.append('}');
             }
-            default -> throw new IllegalArgumentException("Unknown tag type: " + tag.getTagType());
+
+            default -> throw new IllegalArgumentException(
+                "Unknown tag type: " + tag.getTagType()
+            );
         }
     }
 
+    private static void serializeArray(NBTIterable<?> tag, StringBuilder sb,
+                                           String prefix, String suffix) {
+        sb.append(prefix);
+        for (int i = 0; i < tag.size(); i++) {
+            if (i > 0) {
+                sb.append(COMMA);
+            }
+            sb.append(tag.getEntry(i)).append(suffix);
+        }
+        sb.append(']');
+    }
+
     private static String handleKey(String key, SNbtSyntax syntax) {
-        if (syntax.isLegacyParser())
-            return key; // 1.7/1.8 didn't strict quote keys usually
+        if (syntax.isLegacyParser()) { // 1.7/1.8 didn't strict quote keys usually
+            return key;
+        }
         return escape(key, syntax);
     }
 
     private static String escape(String s, SNbtSyntax syntax) {
-        if (syntax == SNbtSyntax.V1_12 || syntax == SNbtSyntax.V1_13 || syntax == SNbtSyntax.V1_14) {
-            if (NO_QUOTE_PATTERN.matcher(s).matches())
+        // Modern SNBT allows unquoted identifiers matching a strict pattern
+        if (syntax == SNbtSyntax.V1_12
+            || syntax == SNbtSyntax.V1_13
+            || syntax == SNbtSyntax.V1_14) {
+
+            if (NO_QUOTE_PATTERN.matcher(s).matches()) {
                 return s;
+            }
         }
 
-        StringBuilder sb = new StringBuilder();
+        // Choose quote character
         char quote = '"';
-        if (syntax.isAllowSingleQuotes() && s.indexOf('"') != -1 && s.indexOf('\'') == -1) {
+        if (syntax.isAllowSingleQuotes()
+            && s.indexOf('"') != -1
+            && s.indexOf('\'') == -1) {
             quote = '\'';
         }
 
+        StringBuilder sb = new StringBuilder();
         sb.append(quote);
+
         for (char c : s.toCharArray()) {
-            if (c == '\\' || c == quote)
+            if (c == '\\' || c == quote) {
                 sb.append('\\');
+            }
             sb.append(c);
         }
+
         sb.append(quote);
         return sb.toString();
     }
