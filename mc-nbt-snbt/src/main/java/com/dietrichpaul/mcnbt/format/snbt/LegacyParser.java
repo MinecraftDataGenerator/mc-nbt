@@ -28,6 +28,18 @@ import java.util.List;
 import java.util.Stack;
 
 class LegacyParser {
+
+    private static final char QUOTE = '"';
+    private static final char ESCAPE = '\\';
+    private static final char COMMA = ',';
+    private static final char COLON = ':';
+
+    private static final String TRUE = "true";
+    private static final String FALSE = "false";
+
+    private static final String REGEX_INT = "[-+]?[0-9]+";
+    private static final String REGEX_FLOATING = "[-+]?[0-9]*\\.?[0-9]+";
+
     private final String content;
 
     public LegacyParser(String content) {
@@ -35,29 +47,35 @@ class LegacyParser {
     }
 
     public NBTTag<?> parse() {
-        if (content.startsWith("{"))
+        if (content.startsWith("{")) {
             return parseCompound(content);
+        }
         // Fallback for non-compounds if necessary, usually legacy expects compound root
         return parsePrimitive(content);
     }
 
-    private NBTCompound parseCompound(String s) {
-        s = s.trim();
-        if (!s.startsWith("{") || !s.endsWith("}"))
+    private NBTCompound parseCompound(String input) {
+        String s = input.trim();
+
+        if (!s.startsWith("{") || !s.endsWith("}")) {
             throw new SNbtException("Invalid compound: " + s);
+        }
 
         s = s.substring(1, s.length() - 1);
         NBTCompound compound = new NBTCompound();
 
         while (!s.isEmpty()) {
             String pair = findPair(s, false);
-            if (!pair.isEmpty()) {
-                String name = findKey(pair);
-                String value = findValue(pair);
-                compound.put(name, parseAny(value));
 
-                if (s.length() < pair.length() + 1)
+            if (!pair.isEmpty()) {
+                String key = findKey(pair);
+                String value = findValue(pair);
+
+                compound.put(key, parseAny(value));
+
+                if (s.length() <= pair.length()) {
                     break;
+                }
                 s = s.substring(pair.length() + 1);
             }
         }
@@ -65,33 +83,42 @@ class LegacyParser {
     }
 
     private NBTTag<?> parseAny(String s) {
-        s = s.trim();
-        if (s.startsWith("{"))
-            return parseCompound(s);
-        if (s.startsWith("[") && !s.matches("\\[[-\\d|,\\s]+]"))
-            return parseList(s);
-        return parsePrimitive(s);
+        String value = s.trim();
+
+        if (value.startsWith("{")) {
+            return parseCompound(value);
+        }
+
+        if (value.startsWith("[") && !value.matches("\\[[-\\d|,\\s]+]")) {
+            return parseList(value);
+        }
+
+        return parsePrimitive(value);
     }
 
-    private NBTList<?> parseList(String s) {
-        if (!s.startsWith("[") || !s.endsWith("]"))
-            throw new SNbtException("Invalid list: " + s);
-        s = s.substring(1, s.length() - 1);
+    private NBTList<?> parseList(String input) {
+        if (!input.startsWith("[") || !input.endsWith("]")) {
+            throw new SNbtException("Invalid list: " + input);
+        }
+
+        String s = input.substring(1, input.length() - 1);
         List<NBTTag<?>> list = new ArrayList<>();
 
         while (!s.isEmpty()) {
             String pair = findPair(s, true);
+
             if (!pair.isEmpty()) {
-                // Legacy lists often had index:value format, we ignore index
-                String valueStr = pair.contains(":") ? findValue(pair) : pair;
+                String value = pair.contains(":") ? findValue(pair) : pair;
+
                 try {
-                    list.add(parseAny(valueStr));
-                }
-                catch (Exception ignored) {
+                    list.add(parseAny(value));
+                } catch (Exception ignored) {
                     // Legacy parsers were lenient
                 }
-                if (s.length() < pair.length() + 1)
+
+                if (s.length() <= pair.length()) {
                     break;
+                }
                 s = s.substring(pair.length() + 1);
             }
         }
@@ -100,86 +127,123 @@ class LegacyParser {
 
     private NBTTag<?> parsePrimitive(String value) {
         try {
-            if (value.matches("[-+]?[0-9]*\\.?[0-9]+[d|D]"))
-                return NBTDouble.of(Double.parseDouble(value.substring(0, value.length() - 1)));
-            if (value.matches("[-+]?[0-9]*\\.?[0-9]+[f|F]"))
-                return NBTFloat.of(Float.parseFloat(value.substring(0, value.length() - 1)));
-            if (value.matches("[-+]?[0-9]+[b|B]"))
-                return NBTByte.of(Byte.parseByte(value.substring(0, value.length() - 1)));
-            if (value.matches("[-+]?[0-9]+[l|L]"))
-                return NBTLong.of(Long.parseLong(value.substring(0, value.length() - 1)));
-            if (value.matches("[-+]?[0-9]+[s|S]"))
-                return NBTShort.of(Short.parseShort(value.substring(0, value.length() - 1)));
-            if (value.matches("[-+]?[0-9]+"))
-                return NBTInt.of(Integer.parseInt(value));
-            if (value.matches("[-+]?[0-9]*\\.?[0-9]+"))
-                return NBTDouble.of(Double.parseDouble(value));
-            if (value.equalsIgnoreCase("true"))
-                return NBTByte.of((byte) 1);
-            if (value.equalsIgnoreCase("false"))
-                return NBTByte.of((byte) 0);
+            char suffix = Character.toLowerCase(value.charAt(value.length() - 1));
 
-            // Legacy IntArray detection
+            switch (suffix) {
+                case 'd':
+                    return NBTDouble.of(Double.parseDouble(trimSuffix(value)));
+                case 'f':
+                    return NBTFloat.of(Float.parseFloat(trimSuffix(value)));
+                case 'b':
+                    return NBTByte.of(Byte.parseByte(trimSuffix(value)));
+                case 'l':
+                    return NBTLong.of(Long.parseLong(trimSuffix(value)));
+                case 's':
+                    return NBTShort.of(Short.parseShort(trimSuffix(value)));
+                default:
+                    break;
+            }
+
+            if (value.matches(REGEX_INT)) {
+                return NBTInt.of(Integer.parseInt(value));
+            }
+
+            if (value.matches(REGEX_FLOATING)) {
+                return NBTDouble.of(Double.parseDouble(value));
+            }
+
+            if (value.equalsIgnoreCase(TRUE)) {
+                return NBTByte.of((byte) 1);
+            }
+
+            if (value.equalsIgnoreCase(FALSE)) {
+                return NBTByte.of((byte) 0);
+            }
+
+            // Legacy IntArray
             if (value.startsWith("[") && value.endsWith("]")) {
-                String content = value.substring(1, value.length() - 1);
-                String[] parts = content.split(",");
-                TIntArrayList ints = new TIntArrayList();
-                for (String p : parts) {
-                    if (!p.trim().isEmpty())
-                        ints.add(Integer.parseInt(p.trim()));
-                }
-                return new NBTIntArray(ints);
+                return parseIntArray(value);
+            }
+
+        } catch (NumberFormatException ignored) {
+        }
+
+        return NBTString.of(unquote(value));
+    }
+
+    private NBTIntArray parseIntArray(String value) {
+        String content = value.substring(1, value.length() - 1);
+        String[] parts = content.split(",");
+        TIntArrayList list = new TIntArrayList();
+
+        for (String p : parts) {
+            String trimmed = p.trim();
+            if (!trimmed.isEmpty()) {
+                list.add(Integer.parseInt(trimmed));
             }
         }
-        catch (NumberFormatException ignored) {
-        }
-
-        if (value.startsWith("\"") && value.endsWith("\"")) {
-            value = value.substring(1, value.length() - 1).replace("\\\"", "\"");
-        }
-        return NBTString.of(value);
+        return new NBTIntArray(list);
     }
 
     private String findPair(String s, boolean isList) {
-        int sep = s.indexOf(':');
-        if (sep < 0 && !isList)
-            throw new SNbtException("No separator found");
-        // Logic simplified: Iterate chars to find split point based on brackets balance
-        int i = (sep < 0) ? 0 : sep + 1;
-        boolean quoted = false;
-        Stack<Character> stack = new Stack<>();
+        int startIndex = 0;
 
-        for (; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '"') {
-                if (i == 0 || s.charAt(i - 1) != '\\')
-                    quoted = !quoted;
+        if (!isList) {
+            int sep = s.indexOf(COLON);
+            if (sep < 0) {
+                throw new SNbtException("No key-value separator found");
             }
-            else if (!quoted) {
-                if (c == '{' || c == '[')
-                    stack.push(c);
-                if (c == '}' && (stack.isEmpty() || stack.pop() != '{'))
-                    throw new SNbtException("Unbalanced {}");
-                if (c == ']' && (stack.isEmpty() || stack.pop() != '['))
-                    throw new SNbtException("Unbalanced []");
-                if (c == ',' && stack.isEmpty())
+            startIndex = sep + 1;
+        }
+
+        boolean quoted = false;
+        int depth = 0;
+
+        for (int i = startIndex; i < s.length(); i++) {
+            char c = s.charAt(i);
+
+            if (c == QUOTE && (i == 0 || s.charAt(i - 1) != ESCAPE)) {
+                quoted = !quoted;
+                continue;
+            }
+
+            if (!quoted) {
+                if (c == '{' || c == '[') {
+                    depth++;
+                } else if (c == '}' || c == ']') {
+                    depth--;
+                } else if (c == COMMA && depth == 0) {
                     return s.substring(0, i);
+                }
             }
         }
-        return s.substring(0, i);
+        return s;
     }
 
     private String findKey(String s) {
-        int idx = s.indexOf(':');
-        if (idx < 0)
+        int idx = s.indexOf(COLON);
+        if (idx < 0) {
             return "";
+        }
         return s.substring(0, idx).trim();
     }
 
     private String findValue(String s) {
-        int idx = s.indexOf(':');
-        if (idx < 0)
+        int idx = s.indexOf(COLON);
+        if (idx < 0) {
             return s.trim();
+        }
         return s.substring(idx + 1).trim();
+    }
+
+    private String trimSuffix(String value) {
+        return value.substring(0, value.length() - 1);
+    }
+
+    private String unquote(String value) {
+        if (value.startsWith("\"") && value.endsWith("\"")) {
+            return value.substring(1, value.length() - 1).replace("\\\"", "\"");
+        }
+        return value;
     }
 }

@@ -30,16 +30,23 @@ class ModernParser {
 
     private static final Pattern DOUBLE_PATTERN_NOSUFFIX = Pattern.compile(
         "[-+]?(?:[0-9]+[.]|[0-9]*[.][0-9]+)(?:e[-+]?[0-9]+)?",
-        Pattern.CASE_INSENSITIVE);
+        Pattern.CASE_INSENSITIVE
+    );
+
     private static final Pattern DOUBLE_PATTERN = Pattern.compile(
         "[-+]?(?:[0-9]+[.]?|[0-9]*[.][0-9]+)(?:e[-+]?[0-9]+)?d",
-        Pattern.CASE_INSENSITIVE);
-    private static final Pattern FLOAT_PATTERN = Pattern.compile("[-+]?(?:[0-9]+[.]?|[0-9]*[.][0-9]+)(?:e[-+]?[0-9]+)?f",
-        Pattern.CASE_INSENSITIVE);
-    private static final Pattern BYTE_PATTERN = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)b", Pattern.CASE_INSENSITIVE);
-    private static final Pattern LONG_PATTERN = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)l", Pattern.CASE_INSENSITIVE);
+        Pattern.CASE_INSENSITIVE
+    );
+
+    private static final Pattern FLOAT_PATTERN = Pattern.compile(
+        "[-+]?(?:[0-9]+[.]?|[0-9]*[.][0-9]+)(?:e[-+]?[0-9]+)?f",
+        Pattern.CASE_INSENSITIVE
+    );
+
+    private static final Pattern BYTE_PATTERN  = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)b", Pattern.CASE_INSENSITIVE);
     private static final Pattern SHORT_PATTERN = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)s", Pattern.CASE_INSENSITIVE);
-    private static final Pattern INT_PATTERN = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)");
+    private static final Pattern LONG_PATTERN  = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)l", Pattern.CASE_INSENSITIVE);
+    private static final Pattern INT_PATTERN   = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)");
 
     private final SNbtStringReader reader;
     private final SNbtSyntax syntax;
@@ -51,42 +58,57 @@ class ModernParser {
 
     public NBTTag<?> parse() {
         NBTTag<?> tag = parseValue();
+
+        // After a valid root tag, no additional input is allowed
         reader.skipWhitespaces();
-        if (reader.canRead())
-            throw new SNbtException("Trailing data found", reader.getString(), reader.getCursor());
+        if (reader.canRead()) {
+            throw new SNbtException(
+                "Trailing data found",
+                reader.getString(),
+                reader.getCursor()
+            );
+        }
         return tag;
     }
 
     private NBTTag<?> parseValue() {
         reader.skipWhitespaces();
-        if (!reader.canRead())
+
+        if (!reader.canRead()) {
             throw new SNbtException("Expected value", reader.getString(), reader.getCursor());
+        }
 
         char c = reader.peek();
-        if (c == '{')
+        if (c == '{') {
             return parseCompound();
-        if (c == '[')
+        }
+        if (c == '[') {
             return parseListOrArray();
+        }
 
         return parsePrimitive();
     }
 
     private NBTCompound parseCompound() {
         reader.expect('{');
-        NBTCompound compound = new NBTCompound();
         reader.skipWhitespaces();
+
+        NBTCompound compound = new NBTCompound();
 
         while (reader.canRead() && reader.peek() != '}') {
             String key = readKey();
-            if (key.isEmpty())
+            if (key.isEmpty()) {
                 throw new SNbtException("Expected key", reader.getString(), reader.getCursor());
+            }
 
             reader.expect(':');
             compound.put(key, parseValue());
 
-            if (!hasNext())
+            if (!hasNext()) {
                 break;
+            }
         }
+
         reader.expect('}');
         return compound;
     }
@@ -101,117 +123,140 @@ class ModernParser {
 
     private NBTTag<?> parseArray() {
         reader.expect('[');
-        char type = reader.read();
-        reader.read(); // skip ;
+
+        char type = reader.read(); // B, I or L
+        reader.read();             // skip ';'
         reader.skipWhitespaces();
 
         if (type == 'B') {
             TByteArrayList list = new TByteArrayList();
             while (reader.peek() != ']') {
-                NBTTag<?> tag = parseValue();
-                if (!(tag instanceof NBTNumberPrimitive))
-                    throw new SNbtException("Expected byte", reader.getString(), reader.getCursor());
-                list.add(((NBTNumberPrimitive<?>) tag).asByte());
-                if (!hasNext())
+                list.add(readNumberPrimitive("byte").asByte());
+                if (!hasNext()) {
                     break;
+                }
             }
             reader.expect(']');
             return new NBTByteArray(list);
         }
-        else if (type == 'I') {
+
+        if (type == 'I') {
             TIntArrayList list = new TIntArrayList();
             while (reader.peek() != ']') {
-                NBTTag<?> tag = parseValue();
-                if (!(tag instanceof NBTNumberPrimitive))
-                    throw new SNbtException("Expected int", reader.getString(), reader.getCursor());
-                list.add(((NBTNumberPrimitive<?>) tag).asInt());
-                if (!hasNext())
+                list.add(readNumberPrimitive("int").asInt());
+                if (!hasNext()) {
                     break;
+                }
             }
             reader.expect(']');
             return new NBTIntArray(list);
         }
-        else if (type == 'L') {
+
+        if (type == 'L') {
             TLongArrayList list = new TLongArrayList();
             while (reader.peek() != ']') {
-                NBTTag<?> tag = parseValue();
-                if (!(tag instanceof NBTNumberPrimitive))
-                    throw new SNbtException("Expected long", reader.getString(), reader.getCursor());
-                list.add(((NBTNumberPrimitive<?>) tag).asLong());
-                if (!hasNext())
+                list.add(readNumberPrimitive("long").asLong());
+                if (!hasNext()) {
                     break;
+                }
             }
             reader.expect(']');
             return new NBTLongArray(list);
         }
+
         throw new SNbtException("Invalid array type " + type);
     }
 
     private NBTList<?> parseList() {
         reader.expect('[');
         reader.skipWhitespaces();
-        if (!reader.canRead())
+
+        if (!reader.canRead()) {
             throw new SNbtException("Unexpected end", reader.getString(), reader.getCursor());
+        }
 
         List<NBTTag<?>> elements = new ArrayList<>();
+
         while (reader.peek() != ']') {
             elements.add(parseValue());
-            if (!hasNext())
+            if (!hasNext()) {
                 break;
+            }
         }
+
         reader.expect(']');
-        // NBTList requires type check, handled inside NBTList.of or we infer
         return NBTList.of(elements);
     }
 
     private NBTTag<?> parsePrimitive() {
         reader.skipWhitespaces();
+
         if (isQuote(reader.peek())) {
             return NBTString.of(reader.readQuotedString());
         }
-        String s = reader.readUnquotedString();
-        if (s.isEmpty())
+
+        String token = reader.readUnquotedString();
+        if (token.isEmpty()) {
             throw new SNbtException("Expected value", reader.getString(), reader.getCursor());
-        return parsePrimitiveFromString(s);
+        }
+
+        return parsePrimitiveFromString(token);
     }
 
     private NBTTag<?> parsePrimitiveFromString(String s) {
         try {
-            if (FLOAT_PATTERN.matcher(s).matches())
-                return NBTFloat.of(Float.parseFloat(s.substring(0, s.length() - 1)));
-            if (BYTE_PATTERN.matcher(s).matches())
-                return NBTByte.of(Byte.parseByte(s.substring(0, s.length() - 1)));
-            if (LONG_PATTERN.matcher(s).matches())
-                return NBTLong.of(Long.parseLong(s.substring(0, s.length() - 1)));
-            if (SHORT_PATTERN.matcher(s).matches())
-                return NBTShort.of(Short.parseShort(s.substring(0, s.length() - 1)));
-            if (INT_PATTERN.matcher(s).matches())
+            if (FLOAT_PATTERN.matcher(s).matches()) {
+                return NBTFloat.of(Float.parseFloat(stripSuffix(s)));
+            }
+            if (BYTE_PATTERN.matcher(s).matches()) {
+                return NBTByte.of(Byte.parseByte(stripSuffix(s)));
+            }
+            if (SHORT_PATTERN.matcher(s).matches()) {
+                return NBTShort.of(Short.parseShort(stripSuffix(s)));
+            }
+            if (LONG_PATTERN.matcher(s).matches()) {
+                return NBTLong.of(Long.parseLong(stripSuffix(s)));
+            }
+            if (INT_PATTERN.matcher(s).matches()) {
                 return NBTInt.of(Integer.parseInt(s));
-            if (DOUBLE_PATTERN.matcher(s).matches())
-                return NBTDouble.of(Double.parseDouble(s.substring(0, s.length() - 1)));
-            if (DOUBLE_PATTERN_NOSUFFIX.matcher(s).matches())
+            }
+            if (DOUBLE_PATTERN.matcher(s).matches()) {
+                return NBTDouble.of(Double.parseDouble(stripSuffix(s)));
+            }
+            if (DOUBLE_PATTERN_NOSUFFIX.matcher(s).matches()) {
                 return NBTDouble.of(Double.parseDouble(s));
-            if (s.equalsIgnoreCase("true"))
+            }
+            if (s.equalsIgnoreCase("true")) {
                 return NBTByte.of((byte) 1);
-            if (s.equalsIgnoreCase("false"))
+            }
+            if (s.equalsIgnoreCase("false")) {
                 return NBTByte.of((byte) 0);
+            }
         }
         catch (NumberFormatException ignored) {
+            // Fall through to string
         }
+
         return NBTString.of(s);
     }
 
     private String readKey() {
         reader.skipWhitespaces();
-        if (!reader.canRead())
+
+        if (!reader.canRead()) {
             return "";
-        if (isQuote(reader.peek()))
+        }
+
+        if (isQuote(reader.peek())) {
             return reader.readQuotedString();
+        }
+
         return reader.readUnquotedString();
     }
 
     private boolean hasNext() {
         reader.skipWhitespaces();
+
         if (reader.canRead() && reader.peek() == ',') {
             reader.skip();
             reader.skipWhitespaces();
@@ -222,5 +267,21 @@ class ModernParser {
 
     private boolean isQuote(char c) {
         return c == '"' || (syntax.isAllowSingleQuotes() && c == '\'');
+    }
+
+    private String stripSuffix(String s) {
+        return s.substring(0, s.length() - 1);
+    }
+
+    private NBTNumberPrimitive<?> readNumberPrimitive(String expected) {
+        NBTTag<?> tag = parseValue();
+        if (!(tag instanceof NBTNumberPrimitive<?>)) {
+            throw new SNbtException(
+                "Expected " + expected,
+                reader.getString(),
+                reader.getCursor()
+            );
+        }
+        return (NBTNumberPrimitive<?>) tag;
     }
 }
