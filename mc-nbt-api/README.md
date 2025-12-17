@@ -23,7 +23,7 @@ To avoid the massive memory overhead of Java's wrapper classes (like `ArrayList<
 ### 3. Advanced Compound Access
 The `NBTCompound` class provides a sophisticated API for data retrieval, allowing you to choose between safety and convenience:
 
-* **Strict Access**: Throws a `NestingException` if the key is missing or the type is incorrect.
+* **Strict Access**: Throws a `IllegalStateException` if the key is missing or the type is incorrect.
     - `getCompound(String key)`
     - `getCompoundOrThrow(String key)`
 * **Defaulting Access**: Returns a provided default value if the key is missing.
