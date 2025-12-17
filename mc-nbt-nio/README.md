@@ -54,8 +54,8 @@ public class NBTEncoder extends MessageToByteEncoder<NBTTagIdentifiable<?>> {
 public class NBTDecoder extends ReplayingDecoder<Void> {
 @Override
 protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-// Convert Netty ByteBuf to NIO ByteBuffer for the library
-ByteBuffer nioBuffer = in.nioBuffer(in.readerIndex(), in.readableBytes());
+        // Convert Netty ByteBuf to NIO ByteBuffer for the library
+        ByteBuffer nioBuffer = in.nioBuffer(in.readerIndex(), in.readableBytes());
 
         // Read named tag
         NBTTagIdentifiable<?> result = NIOToNBT.readNamedTag(nioBuffer);
